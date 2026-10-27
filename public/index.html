@@ -278,18 +278,36 @@
 
             <div class="form-grid mt-20">
               <div class="form-group full-width">
-                <label for="wizTargetRoles">What are your ideal job titles? (e.g. Product Manager, Registered Nurse, Marketing Director, Software Engineer)</label>
+                <label for="wizCareerField">What is your primary career field or industry sector?</label>
+                <select id="wizCareerField" class="input-select">
+                  <option value="Business, Operations & Strategy">Business, Operations, Consulting & Management</option>
+                  <option value="Healthcare, Nursing & Clinical">Healthcare, Nursing, Medical & Life Sciences</option>
+                  <option value="Finance, Accounting & Banking">Finance, Accounting, Banking & Insurance</option>
+                  <option value="Education, Teaching & Training">Education, Teaching, Academic & Corporate Training</option>
+                  <option value="Human Resources & People Operations">Human Resources, Recruiting & People Operations</option>
+                  <option value="Sales, Account Management & Client Success">Sales, Account Management & Client Success</option>
+                  <option value="Marketing, Communications & Creative">Marketing, Communications, Media & Design</option>
+                  <option value="Supply Chain, Logistics & Manufacturing">Supply Chain, Logistics, Engineering & Skilled Trades</option>
+                  <option value="Legal, Government & Public Service">Legal, Compliance, Nonprofit & Public Service</option>
+                  <option value="Hospitality, Retail & Customer Experience">Hospitality, Retail, Real Estate & Customer Experience</option>
+                  <option value="Technology, Product & Data">Technology, IT, Product & Data</option>
+                </select>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="wizTargetRoles">What are your ideal job titles? (e.g. Operations Manager, Registered Nurse, Financial Analyst, Elementary Teacher, Marketing Director, HR Manager)</label>
                 <input type="text" id="wizTargetRoles" class="input-field input-lg" placeholder="Type 1 to 3 ideal job titles..." />
               </div>
 
               <div class="form-group full-width">
                 <label for="wizCareerGoal">In 1–2 sentences, what is your #1 career goal right now?</label>
-                <textarea id="wizCareerGoal" class="input-field" rows="2" placeholder="e.g. Transition into a senior remote leadership role where I can lead AI product strategy and earn $180k+."></textarea>
+                <textarea id="wizCareerGoal" class="input-field" rows="2" placeholder="e.g. Step into a senior leadership role where I can improve operational excellence, mentor teams, and grow my compensation."></textarea>
               </div>
 
               <div class="form-group">
                 <label for="wizWorkStyle">Where do you want to work?</label>
                 <select id="wizWorkStyle" class="input-select">
+                  <option value="On-site / Hybrid">On-site or Hybrid</option>
                   <option value="Remote / Hybrid">Remote or Hybrid</option>
                   <option value="Remote">100% Remote Only</option>
                   <option value="Hybrid">Hybrid</option>
@@ -299,17 +317,17 @@
 
               <div class="form-group">
                 <label for="wizMinSalary">Ideal Minimum Base Salary ($ USD)</label>
-                <input type="number" id="wizMinSalary" class="input-field" step="5000" placeholder="150000" />
+                <input type="number" id="wizMinSalary" class="input-field" step="5000" placeholder="95000" />
               </div>
 
               <div class="form-group">
                 <label for="wizLocation">Your City / State</label>
-                <input type="text" id="wizLocation" class="input-field" placeholder="e.g. Austin, TX" />
+                <input type="text" id="wizLocation" class="input-field" placeholder="e.g. Chicago, IL or Austin, TX" />
               </div>
 
               <div class="form-group">
-                <label for="wizIndustries">Preferred Industries (Optional)</label>
-                <input type="text" id="wizIndustries" class="input-field" placeholder="e.g. Tech, Healthcare, Finance, SaaS" />
+                <label for="wizIndustries">Specific Industries or Specialties (Optional)</label>
+                <input type="text" id="wizIndustries" class="input-field" placeholder="e.g. Healthcare, Higher Education, Corporate Finance, Retail, Consulting" />
               </div>
             </div>
 
@@ -441,11 +459,11 @@
             </div>
             <div class="form-group">
               <label for="inpHeadline">Professional Headline</label>
-              <input type="text" id="inpHeadline" class="input-field" placeholder="e.g. Senior Product Manager" />
+              <input type="text" id="inpHeadline" class="input-field" placeholder="e.g. Operations Director, Registered Nurse, Senior Financial Analyst" />
             </div>
             <div class="form-group full-width">
               <label for="inpTargetRoles">Ideal Positions / Target Job Titles (comma-separated)</label>
-              <input type="text" id="inpTargetRoles" class="input-field" placeholder="e.g. Staff Product Manager, Principal PM, Director of Product" />
+              <input type="text" id="inpTargetRoles" class="input-field" placeholder="e.g. Director of Operations, Clinical Nurse Manager, Marketing Manager, Senior Accountant" />
             </div>
             <div class="form-group full-width">
               <label for="inpMission">Your Career Goal / North Star Statement</label>
@@ -454,10 +472,11 @@
             <div class="form-group">
               <label for="inpWorkStyle">Preferred Work Arrangement</label>
               <select id="inpWorkStyle" class="input-select">
+                <option value="On-site / Hybrid">On-site or Hybrid</option>
                 <option value="Remote">Remote First</option>
                 <option value="Hybrid">Hybrid (2-3 days/wk)</option>
                 <option value="Remote / Hybrid">Remote or Hybrid</option>
-                <option value="On-site">On-site</option>
+                <option value="On-site">On-site / In-Person</option>
               </select>
             </div>
             <div class="form-group">
@@ -466,11 +485,11 @@
             </div>
             <div class="form-group">
               <label for="inpLocation">Location</label>
-              <input type="text" id="inpLocation" class="input-field" placeholder="e.g. Austin, TX" />
+              <input type="text" id="inpLocation" class="input-field" placeholder="e.g. Chicago, IL or Austin, TX" />
             </div>
             <div class="form-group">
-              <label for="inpIndustries">Preferred Industries</label>
-              <input type="text" id="inpIndustries" class="input-field" placeholder="e.g. AI/ML, B2B SaaS, Healthcare" />
+              <label for="inpIndustries">Preferred Industries & Career Sector</label>
+              <input type="text" id="inpIndustries" class="input-field" placeholder="e.g. Healthcare, Corporate Finance, Education, Operations, Retail, Technology" />
             </div>
           </div>
 
@@ -662,8 +681,8 @@
                 <input type="text" id="atsLinkedinInput" class="input-field input-sm" placeholder="linkedin.com/in/alex-jordan" />
               </div>
               <div class="form-group">
-                <label for="atsEducationInput">Education & Certifications</label>
-                <input type="text" id="atsEducationInput" class="input-field input-sm" placeholder="B.S. Computer Science & MBA | PMP, Pragmatic Certified" />
+                <label for="atsEducationInput">Education, Licenses & Certifications</label>
+                <input type="text" id="atsEducationInput" class="input-field input-sm" placeholder="e.g. B.A. / B.S. / MBA / BSN | RN, CPA, PMP, SHRM-CP" />
               </div>
             </div>
           </details>
@@ -723,15 +742,15 @@
             <div class="control-item">
               <label for="infoThemeSelect">Industry Standard Layout</label>
               <select id="infoThemeSelect" class="input-select input-sm">
-                <option value="deloitte">Deloitte Consulting One-Pager (Black / Green Dot / Advisory Grid)</option>
-                <option value="microsoft">Microsoft Fluent Executive Profile (Azure Blue / Bento Tiles)</option>
-                <option value="healthcare">Healthcare & Life Sciences Clinical Brief (Clean Teal & Slate)</option>
-                <option value="creative">Executive Editorial & Brand Sheet (Warm Ivory & Serif)</option>
+                <option value="deloitte">Deloitte Consulting & Corporate Standard (Business, Finance, Ops, HR & Legal)</option>
+                <option value="microsoft">Microsoft Modern Enterprise Standard (Management, Sales, Project & Tech)</option>
+                <option value="healthcare">Healthcare, Education & Public Service Standard (Clinical, Teaching & Nonprofit)</option>
+                <option value="creative">Executive Editorial & Brand Standard (Marketing, Media, Design & Hospitality)</option>
               </select>
             </div>
             <div class="control-item">
               <label for="infoTaglineInput">Availability / Practice Badge</label>
-              <input type="text" id="infoTaglineInput" class="input-field input-sm" value="Available for Staff / Principal Roles" />
+              <input type="text" id="infoTaglineInput" class="input-field input-sm" value="Open to New Career Opportunities" />
             </div>
             <button class="btn btn-secondary btn-sm" id="editMetricsBtn">✏️ Edit KPIs</button>
             <button class="btn btn-primary btn-sm" id="printInfographicBtn">🖨️ Print / Save as PDF</button>
@@ -765,16 +784,21 @@
             </div>
 
             <div class="job-search-bar">
-              <input type="text" id="jobSearchInput" class="input-field" placeholder="Search role, skill, or keyword (e.g. Product Manager, React, AI)..." />
-              <select id="jobCategorySelect" class="input-select" style="max-width: 190px;">
-                <option value="">All Categories</option>
-                <option value="product">Product</option>
-                <option value="software-dev">Software Dev</option>
-                <option value="data">Data & AI</option>
-                <option value="marketing">Marketing</option>
-                <option value="design">Design</option>
+              <input type="text" id="jobSearchInput" class="input-field" placeholder="Search any role, profession, or skill (e.g. Operations Manager, Registered Nurse, Accountant, Teacher, Marketing)..." />
+              <select id="jobCategorySelect" class="input-select" style="max-width: 230px;">
+                <option value="">All Career Categories</option>
+                <option value="business">Business, Operations & Mgmt</option>
+                <option value="healthcare">Healthcare, Nursing & Medical</option>
+                <option value="finance-legal">Finance, Accounting & Legal</option>
+                <option value="hr">Human Resources & Recruiting</option>
+                <option value="sales">Sales & Client Success</option>
+                <option value="marketing">Marketing, Brand & Media</option>
+                <option value="education">Education, Teaching & Training</option>
+                <option value="customer-support">Customer Experience & Support</option>
+                <option value="product">Product & Project Management</option>
+                <option value="software-dev">Technology, IT & Engineering</option>
               </select>
-              <button class="btn btn-primary" id="searchLiveJobsBtn">Search Live Jobs</button>
+              <button class="btn btn-primary" id="searchLiveJobsBtn">Search Jobs</button>
             </div>
 
             <div class="deep-board-links" id="deepBoardLinksBar"></div>
@@ -785,23 +809,23 @@
             <div class="card-header">
               <div>
                 <h3>🎯 Instant Job URL / JD Match Analyzer</h3>
-                <p>Found a job on LinkedIn, Greenhouse, or Lever? Paste the URL or job description to inspect your exact fit.</p>
+                <p>Found a job on LinkedIn, Indeed, Hospital/School portals, or a company site? Paste the URL or job description to inspect your exact fit.</p>
               </div>
             </div>
 
             <div class="url-fetch-row">
-              <input type="url" id="pasteJobUrlInput" class="input-field input-sm" placeholder="https://boards.greenhouse.io/... or job URL" />
+              <input type="url" id="pasteJobUrlInput" class="input-field input-sm" placeholder="https://... paste any job posting URL" />
               <button class="btn btn-secondary btn-sm" id="fetchJobUrlBtn">Fetch URL</button>
             </div>
 
             <div class="form-grid mt-12">
               <div class="form-group">
                 <label for="anJobTitle">Role Title</label>
-                <input type="text" id="anJobTitle" class="input-field input-sm" placeholder="e.g. Principal Product Manager, AI" />
+                <input type="text" id="anJobTitle" class="input-field input-sm" placeholder="e.g. Operations Director, Clinical Nurse Manager, Financial Analyst" />
               </div>
               <div class="form-group">
-                <label for="anJobCompany">Company</label>
-                <input type="text" id="anJobCompany" class="input-field input-sm" placeholder="e.g. Anthropic / Stripe" />
+                <label for="anJobCompany">Organization / Employer</label>
+                <input type="text" id="anJobCompany" class="input-field input-sm" placeholder="e.g. Deloitte, Mayo Clinic, JPMorgan, Local School District" />
               </div>
             </div>
 

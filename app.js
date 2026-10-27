@@ -8,106 +8,108 @@ const STORAGE_KEY = "careeros_state_v1";
 const PERSONA_PRESETS = {
   pm: {
     name: "Alex Jordan",
-    headline: "Staff Product Manager — AI Platforms & B2B SaaS",
-    location: "Austin, TX (Remote / Hybrid)",
+    headline: "Senior Operations & Strategic Programs Director",
+    location: "Chicago, IL (Hybrid / Remote)",
     yearsExp: 9,
-    mission: "Build autonomous AI workflows and enterprise SaaS products that turn complex data into 10x operator productivity.",
-    targetRoles: "Staff Product Manager, Principal Product Manager, Director of Product, AI Product Lead",
-    industries: "AI/ML, Developer Tools, B2B SaaS, FinTech",
-    minSalary: 185000,
-    workStyle: "Remote / Hybrid",
+    careerField: "Business, Operations & Strategy",
+    mission: "Drive operational excellence, cross-departmental alignment, and measurable service quality improvements across growing organizations.",
+    targetRoles: "Director of Operations, Senior Program Manager, Business Operations Lead, Chief of Staff",
+    industries: "Business Operations, Healthcare Administration, Corporate Strategy, Financial Services",
+    minSalary: 125000,
+    workStyle: "On-site / Hybrid",
+    educationText: "B.A. in Business Administration & Operations Management | PMP & Lean Six Sigma Certified",
     horizons: {
-      h1: "Land a Staff/Principal AI Product role at a high-growth Series B–D or public tech leader; ship flagship agentic workflow.",
-      h2: "Expand scope to lead a multi-pod product group (4–6 PMs) owning $40M+ ARR product line.",
-      h3: "VP / Chief Product Officer at an AI-native enterprise company."
+      h1: "Step into a Director of Operations or Senior Program Manager role and deliver measurable 90-day process and budget improvements.",
+      h2: "Lead multi-department operations, P&L budgeting, and strategic planning across regional or national teams.",
+      h3: "VP of Operations or Chief Operating Officer (COO)."
     },
     priorities: [
-      { id: "comp", label: "Total Compensation", weight: 90 },
-      { id: "autonomy", label: "Product Autonomy & Scope", weight: 95 },
-      { id: "remote", label: "Remote Flexibility", weight: 85 },
-      { id: "ai", label: "AI-First Technical Depth", weight: 92 }
+      { id: "comp", label: "Compensation & Benefits", weight: 90 },
+      { id: "autonomy", label: "Leadership Scope & Impact", weight: 95 },
+      { id: "remote", label: "Work-Life & Schedule Flexibility", weight: 85 },
+      { id: "culture", label: "Mission & Organizational Culture", weight: 92 }
     ],
     skills: [
-      { name: "Product Strategy & Roadmapping", level: 95, demand: 95 },
-      { name: "LLM / Agentic AI Workflows", level: 88, demand: 96 },
-      { name: "PLG & Enterprise Monetization", level: 90, demand: 88 },
-      { name: "SQL, Python & Experimentation", level: 82, demand: 85 },
-      { name: "Cross-Functional Leadership", level: 94, demand: 92 },
-      { name: "AI Evals & Guardrails Architecture", level: 68, demand: 90 }
+      { name: "Strategic Planning & Operations Management", level: 95, demand: 95 },
+      { name: "Budgeting, P&L & Resource Allocation", level: 90, demand: 92 },
+      { name: "Cross-Functional Team Leadership", level: 94, demand: 94 },
+      { name: "Process Improvement & Change Management", level: 88, demand: 90 },
+      { name: "Stakeholder & Client Relationship Management", level: 92, demand: 91 },
+      { name: "KPI Reporting & Performance Analytics", level: 84, demand: 88 }
     ],
-    summary: "Product leader with 9+ years scaling B2B SaaS and AI-native platforms from $4M to $38M ARR. Proven track record uniting engineering, design, and GTM teams to launch category-defining workflow automation products.",
+    summary: "Operations and Strategic Programs leader with 9+ years optimizing multi-site business operations, managing $18M+ departmental budgets, and leading cross-functional teams of 45+ staff to deliver measurable quality and efficiency gains.",
     metrics: [
-      { num: "$34M+", label: "Net-New ARR Driven" },
-      { num: "9+ Yrs", label: "Product & SaaS Leadership" },
-      { num: "140K+", label: "Active Weekly Enterprise Users" },
-      { num: "42%", label: "Activation Lift via AI Onboarding" }
+      { num: "$18M+", label: "Annual Budget & P&L Managed" },
+      { num: "9+ Yrs", label: "Operations & Team Leadership" },
+      { num: "32%", label: "Process Efficiency Improvement" },
+      { num: "96%", label: "Client & Stakeholder Satisfaction" }
     ],
     experience: [
       {
-        role: "Senior / Staff Product Manager",
-        company: "VeloCloud AI",
-        period: "2023 – Present",
+        role: "Senior Operations & Program Manager",
+        company: "Meridian Enterprise Group",
+        period: "2022 – Present",
         bullets: [
-          "Spearheaded launch of AI Copilot workflow engine, scaling adoption to 140,000+ weekly active users and generating $14.2M in expansion ARR within 11 months.",
-          "Cut enterprise onboarding time by 42% (from 19 days to 11 days) by redesigning data connector architecture with 14 engineers.",
-          "Responsible for managing product roadmap and working with stakeholders on quarterly planning."
+          "Spearheaded regional operational transformation across 6 business units, improving service delivery speed by 32% and saving $1.8M annually.",
+          "Directed a cross-functional team of 45+ staff and managed an $18M operating budget with 99.4% compliance accuracy.",
+          "Responsible for managing weekly department meetings and helping staff with scheduling workflows."
         ]
       },
       {
-        role: "Senior Product Manager, Core Growth",
-        company: "MetricPulse SaaS",
-        period: "2020 – 2023",
+        role: "Operations & Client Services Manager",
+        company: "Vanguard Health & Advisory Partners",
+        period: "2019 – 2022",
         bullets: [
-          "Owned self-serve PLG funnel and usage-based pricing tier, increasing free-to-paid conversion by 28% and adding $9.8M ARR.",
-          "Built experimentation framework across 6 product squads, running 45+ A/B tests per year.",
-          "Helped sales team close enterprise deals by joining customer calls and writing product specs."
+          "Redesigned client onboarding and quality assurance protocols across 120+ accounts, lifting client retention from 84% to 96%.",
+          "Implemented standardized KPI dashboards and staff training programs, reducing new-hire ramp time by 35%.",
+          "Helped senior leadership prepare quarterly board presentations and vendor contracts."
         ]
       },
       {
-        role: "Product Manager",
-        company: "FinSight Analytics",
-        period: "2017 – 2020",
+        role: "Project & Operations Coordinator",
+        company: "Apex Regional Services",
+        period: "2016 – 2019",
         bullets: [
-          "Launched real-time anomaly detection dashboard for 450+ mid-market finance teams, reducing churn by 18%.",
-          "Partnered with design and engineering to ship mobile executive reporting app with 4.8-star rating."
+          "Coordinated scheduling, vendor procurement, and compliance audits for 30+ concurrent organizational initiatives.",
+          "Reduced supply and vendor overhead costs by 18% ($340K/yr) through consolidated contract negotiations."
         ]
       }
     ],
-    infographicTheme: "executive",
-    infographicTagline: "Available for Staff / Principal PM Roles",
+    infographicTheme: "deloitte",
+    infographicTagline: "Open to Operations & Program Leadership Roles",
     savedJobs: [
       {
         id: "crm-1",
-        title: "Principal Product Manager, Agentic AI",
-        company: "LinearFlow AI",
-        location: "Remote (US)",
-        salary: "$195,000 - $230,000",
-        matchScore: 94,
+        title: "Director of Business Operations",
+        company: "Deloitte / Enterprise Advisory",
+        location: "Chicago, IL (Hybrid)",
+        salary: "$135,000 - $165,000",
+        matchScore: 95,
         stage: "Interviewing",
-        url: "https://remotive.com",
-        description: "Lead our Agentic AI platform, product strategy, LLM evals, B2B SaaS enterprise monetization, SQL analytics, and cross-functional roadmap execution."
+        url: "https://www.linkedin.com/jobs",
+        description: "Lead strategic operations, P&L budget management, cross-functional team leadership, process improvement, and executive KPI reporting."
       },
       {
         id: "crm-2",
-        title: "Staff Product Manager — Developer Platform",
-        company: "Raycast Cloud",
-        location: "Remote",
-        salary: "$185,000 - $215,000",
-        matchScore: 89,
+        title: "Senior Program Manager — Healthcare Operations",
+        company: "Northwestern Regional Health",
+        location: "Hybrid / On-site",
+        salary: "$120,000 - $145,000",
+        matchScore: 91,
         stage: "Applied",
-        url: "https://remotive.com",
-        description: "Own developer workflow platform, PLG growth funnel, API ecosystem, and enterprise expansion."
+        url: "https://www.indeed.com",
+        description: "Oversee clinical and administrative program operations, stakeholder alignment, regulatory compliance, and service quality initiatives."
       },
       {
         id: "crm-3",
-        title: "Director of Product, Enterprise SaaS",
-        company: "ScaleOps",
-        location: "Austin, TX (Hybrid)",
-        salary: "$210,000 - $245,000",
-        matchScore: 86,
+        title: "VP of Operations & Client Experience",
+        company: "Summit Financial & Consulting",
+        location: "Remote / Hybrid",
+        salary: "$145,000 - $175,000",
+        matchScore: 88,
         stage: "Saved",
-        url: "https://remotive.com",
-        description: "Lead a team of PMs building enterprise workflow automation, pricing strategy, and AI analytics."
+        url: "https://www.linkedin.com/jobs",
+        description: "Drive end-to-end operational strategy, client retention, vendor management, and organizational scaling."
       }
     ]
   },
@@ -251,62 +253,132 @@ const PERSONA_PRESETS = {
   }
 };
 
-// High-signal fallback jobs if offline or combined with live feed
+// Multi-Industry Curated Real Jobs across Healthcare, Business/Ops, Finance, HR, Education, Sales, Marketing & Tech
 const CURATED_REAL_JOBS = [
   {
-    id: "curated-1",
-    title: "Staff Product Manager, AI Agents & Workflows",
-    company: "ServiceNow / AI Labs",
-    location: "Remote (US)",
-    salary: "$195,000 - $235,000",
+    id: "curated-ops-1",
+    title: "Director of Operations & Strategic Initiatives",
+    company: "Deloitte / Enterprise Advisory Services",
+    location: "Hybrid / Remote (US)",
+    salary: "$135,000 - $165,000",
     type: "Full Time",
-    category: "Product",
-    url: "https://remotive.com/remote-jobs/product",
+    category: "Business, Operations & Mgmt",
+    url: "https://www.linkedin.com/jobs/search/?keywords=Director+of+Operations",
     publishedAt: "2026-10-26",
-    tags: ["Product Strategy", "LLM", "Agentic AI", "B2B SaaS", "SQL", "Enterprise"],
-    description: "We are looking for a Staff Product Manager to lead our autonomous AI Agents platform. You will define the product strategy, roadmap, LLM evaluation guardrails, and enterprise monetization across 100k+ users. Requires 7+ years in B2B SaaS product management, SQL/data experimentation, and cross-functional leadership.",
+    tags: ["Operations Management", "Strategic Planning", "P&L Budget", "Process Improvement", "Leadership"],
+    description: "Lead multi-department operations, P&L budget forecasting, workflow transformation, vendor management, and executive KPI reporting across regional teams.",
     source: "Verified Direct Board"
   },
   {
-    id: "curated-2",
-    title: "Principal Product Manager — PLG & Monetization",
-    company: "Figma / Ecosystem Partner",
-    location: "San Francisco or Remote",
-    salary: "$200,000 - $240,000",
+    id: "curated-hc-1",
+    title: "Clinical Nurse Manager / Director of Patient Care (RN, BSN)",
+    company: "Mayo Clinic / Regional Health Network",
+    location: "On-site / Hybrid",
+    salary: "$115,000 - $142,000",
     type: "Full Time",
-    category: "Product",
-    url: "https://remotive.com/remote-jobs/product",
+    category: "Healthcare, Nursing & Medical",
+    url: "https://www.indeed.com/jobs?q=Clinical+Nurse+Manager",
+    publishedAt: "2026-10-26",
+    tags: ["Patient Care", "Clinical Leadership", "RN / BSN", "Healthcare Compliance", "Care Coordination", "JCAHO"],
+    description: "Oversee clinical nursing operations, patient safety protocols, interdisciplinary care teams, regulatory compliance (HIPAA/JCAHO), and staff mentoring across a 40-bed unit.",
+    source: "Verified Healthcare Board"
+  },
+  {
+    id: "curated-fin-1",
+    title: "Senior Financial Analyst & FP&A Manager",
+    company: "JPMorgan Chase / Corporate Finance",
+    location: "Hybrid / Remote",
+    salary: "$118,000 - $145,000",
+    type: "Full Time",
+    category: "Finance, Accounting & Legal",
+    url: "https://www.linkedin.com/jobs/search/?keywords=Senior+Financial+Analyst",
     publishedAt: "2026-10-25",
-    tags: ["PLG", "Pricing", "Experimentation", "B2B SaaS", "Roadmapping"],
-    description: "Drive self-serve PLG activation, enterprise tier conversion, and experimentation across millions of users. Partner with engineering, design, and data science to run high-velocity A/B tests and launch AI-assisted onboarding.",
+    tags: ["Financial Modeling", "FP&A", "Budgeting & Forecasting", "GAAP Accounting", "Executive Reporting"],
+    description: "Partner with business unit leaders to own annual budgeting, quarterly forecasting, variance analysis, financial modeling, and board-level P&L reporting.",
     source: "Verified Direct Board"
   },
   {
-    id: "curated-3",
-    title: "Staff Full-Stack AI Engineer (TypeScript / Python)",
-    company: "Perplexity Enterprise Partner",
-    location: "Remote",
-    salary: "$190,000 - $230,000",
+    id: "curated-edu-1",
+    title: "Curriculum Director & Instructional Leadership Specialist",
+    company: "National Education & Learning Partners",
+    location: "Hybrid / Remote",
+    salary: "$92,000 - $118,000",
     type: "Full Time",
-    category: "Software Dev",
-    url: "https://remotive.com/remote-jobs/software-dev",
+    category: "Education, Teaching & Training",
+    url: "https://www.indeed.com/jobs?q=Curriculum+Director+Education",
+    publishedAt: "2026-10-25",
+    tags: ["Curriculum Development", "Instructional Design", "Educator Coaching", "Student Outcomes", "Assessment"],
+    description: "Lead K-12 / Adult learning curriculum design, teacher professional development, instructional coaching, and measurable student achievement programs.",
+    source: "Verified Education Board"
+  },
+  {
+    id: "curated-hr-1",
+    title: "Senior Human Resources Business Partner (HRBP)",
+    company: "Microsoft / Global People Operations",
+    location: "Hybrid / Remote",
+    salary: "$125,000 - $155,000",
+    type: "Full Time",
+    category: "Human Resources & Recruiting",
+    url: "https://www.linkedin.com/jobs/search/?keywords=Senior+HR+Business+Partner",
     publishedAt: "2026-10-26",
-    tags: ["TypeScript", "React", "Python", "Distributed Systems", "LLM", "Postgres"],
-    description: "Architect low-latency RAG pipelines, distributed Python services, and reactive Next.js TypeScript interfaces. Experience with Postgres, Redis, Kubernetes, and LLM orchestration required.",
+    tags: ["Talent Management", "Employee Relations", "Organizational Development", "SHRM / PHR", "Workforce Planning"],
+    description: "Serve as strategic HR advisor to senior leadership on talent retention, organizational design, performance management, compensation planning, and employee engagement.",
     source: "Verified Direct Board"
   },
   {
-    id: "curated-4",
-    title: "Director of Growth & Product Marketing (B2B SaaS)",
-    company: "PostHog / Open SaaS",
-    location: "Remote (Global)",
-    salary: "$180,000 - $215,000",
+    id: "curated-sales-1",
+    title: "Regional Director of Sales & Strategic Accounts",
+    company: "Salesforce / Enterprise Commercial",
+    location: "Remote / Hybrid",
+    salary: "$140,000 - $195,000 (Base + OTE)",
     type: "Full Time",
-    category: "Marketing",
-    url: "https://remotive.com/remote-jobs/marketing",
+    category: "Sales & Client Success",
+    url: "https://www.linkedin.com/jobs/search/?keywords=Director+of+Sales",
+    publishedAt: "2026-10-25",
+    tags: ["Consultative Sales", "Account Management", "Revenue Growth", "Client Retention", "Contract Negotiation"],
+    description: "Drive new business acquisition and executive client relationships across key regional accounts, leading a team of account executives to exceed annual revenue targets.",
+    source: "Verified Direct Board"
+  },
+  {
+    id: "curated-mkt-1",
+    title: "Director of Brand Strategy & Integrated Marketing",
+    company: "Ogilvy / Global Brand Partners",
+    location: "Hybrid / Remote",
+    salary: "$130,000 - $160,000",
+    type: "Full Time",
+    category: "Marketing, Brand & Media",
+    url: "https://www.linkedin.com/jobs/search/?keywords=Director+of+Marketing",
     publishedAt: "2026-10-24",
-    tags: ["Demand Generation", "Product Marketing", "PLG", "SEO", "B2B SaaS"],
-    description: "Lead our B2B SaaS growth engine, product positioning, developer content strategy, and PLG funnel attribution. Proven track record scaling pipeline and reducing CAC payback.",
+    tags: ["Brand Strategy", "Integrated Campaigns", "Public Relations", "Audience Growth", "Creative Direction"],
+    description: "Lead multi-channel brand campaigns, public relations, storytelling, and customer acquisition strategies across national and global markets.",
+    source: "Verified Direct Board"
+  },
+  {
+    id: "curated-sc-1",
+    title: "Supply Chain & Logistics Operations Manager",
+    company: "Procter & Gamble / Global Supply Network",
+    location: "On-site / Hybrid",
+    salary: "$110,000 - $138,000",
+    type: "Full Time",
+    category: "Supply Chain & Manufacturing",
+    url: "https://www.indeed.com/jobs?q=Supply+Chain+Operations+Manager",
+    publishedAt: "2026-10-24",
+    tags: ["Supply Chain", "Inventory Optimization", "Vendor Procurement", "Lean Six Sigma", "Logistics"],
+    description: "Optimize end-to-end supply chain logistics, warehouse distribution, supplier negotiations, and Lean Six Sigma quality initiatives.",
+    source: "Verified Direct Board"
+  },
+  {
+    id: "curated-tech-1",
+    title: "Senior Product & Digital Transformation Manager",
+    company: "ServiceNow / Enterprise Solutions",
+    location: "Remote (US)",
+    salary: "$160,000 - $195,000",
+    type: "Full Time",
+    category: "Technology, IT & Engineering",
+    url: "https://remotive.com/remote-jobs/product",
+    publishedAt: "2026-10-26",
+    tags: ["Product Strategy", "Digital Transformation", "Cross-Functional Leadership", "Roadmapping", "Analytics"],
+    description: "Lead enterprise digital workflow initiatives, partnering with business stakeholders and engineering teams to deliver high-impact solutions.",
     source: "Verified Direct Board"
   }
 ];
@@ -314,7 +386,10 @@ const CURATED_REAL_JOBS = [
 const STRONG_VERBS = [
   "spearheaded", "architected", "scaled", "launched", "accelerated",
   "engineered", "generated", "reduced", "cut", "owned", "built",
-  "drove", "orchestrated", "pioneered", "transformed", "delivered"
+  "drove", "orchestrated", "pioneered", "transformed", "delivered",
+  "directed", "managed", "implemented", "redesigned", "elevated",
+  "streamlined", "negotiated", "mentored", "cultivated", "administered",
+  "established", "expanded", "strengthened", "optimized", "coordinated"
 ];
 
 const WEAK_PHRASES = [
@@ -549,21 +624,301 @@ function switchTab(tabId) {
   if (tabId === "tracker") renderTrackerModule();
 }
 
-function detectIndustryThemeFromProfile(industriesStr, rolesStr) {
-  const combined = `${industriesStr || ""} ${rolesStr || ""}`.toLowerCase();
-  if (/(health|medical|clinical|nurse|pharma|biotech|hospital|patient)/.test(combined)) {
+function detectIndustryThemeFromProfile(industriesStr, rolesStr, careerFieldStr = "") {
+  const combined = `${careerFieldStr || ""} ${industriesStr || ""} ${rolesStr || ""}`.toLowerCase();
+  if (/(health|medical|clinical|nurse|nursing|pharma|biotech|hospital|patient|physician|therap|educat|teach|school|academic|curriculum|nonprofit|social work)/.test(combined)) {
     return "healthcare";
   }
-  if (/(design|brand|creative|editorial|media|agency|art|luxury)/.test(combined)) {
+  if (/(marketing|design|brand|creative|editorial|media|agency|art|luxury|communications|public relations|hospitality|retail|event|real estate)/.test(combined)) {
     return "creative";
   }
-  if (/(consult|advisory|deloitte|mckinsey|bain|bcg|pwc|ey|kpmg|finance|banking|pe|strategy|operations)/.test(combined)) {
-    return "deloitte";
-  }
-  if (/(tech|software|ai|ml|saas|cloud|data|engineer|developer|product|cyber|microsoft)/.test(combined)) {
+  if (/(tech|software|ai|ml|saas|cloud|data|engineer|developer|it\b|cyber|microsoft|information technology|systems)/.test(combined)) {
     return "microsoft";
   }
+  if (/(consult|advisory|deloitte|mckinsey|bain|bcg|pwc|ey|kpmg|finance|accounting|cpa|audit|tax|banking|pe|strategy|operations|supply chain|logistics|procurement|hr|human resources|recruiting|legal|compliance|government|administration|management|sales|account)/.test(combined)) {
+    return "deloitte";
+  }
   return "deloitte";
+}
+
+function getCareerFieldTemplateData(careerFieldStr, rolesStr, industriesStr) {
+  const combined = `${careerFieldStr || ""} ${rolesStr || ""} ${industriesStr || ""}`.toLowerCase();
+  const primaryRole = ((rolesStr || "").split(",")[0] || "").trim();
+
+  if (/(health|medical|clinical|nurse|nursing|hospital|patient|therap|pharma)/.test(combined)) {
+    const role = primaryRole || "Clinical Nurse Manager (RN, BSN)";
+    return {
+      skills: [
+        { name: "Patient Care & Clinical Excellence", level: 95, demand: 96 },
+        { name: "Interdisciplinary Care Coordination", level: 92, demand: 92 },
+        { name: "HIPAA, JCAHO & Regulatory Compliance", level: 90, demand: 94 },
+        { name: "Clinical Staff Supervision & Mentoring", level: 88, demand: 90 },
+        { name: "EHR / Epic Documentation & Triage", level: 86, demand: 88 },
+        { name: "Quality Assurance & Patient Safety", level: 91, demand: 93 }
+      ],
+      education: "B.S. in Nursing (BSN) / Healthcare Administration | Active RN License, BLS/ACLS Certified",
+      summary: `${role} with 8+ years of clinical and operational experience delivering high-acuity patient care, leading interdisciplinary medical teams, and achieving 98%+ patient satisfaction and regulatory compliance scores.`,
+      sampleExperience: [
+        {
+          role: role,
+          company: "Regional Medical Center & Health System",
+          period: "2022 – Present",
+          bullets: [
+            "Directed daily clinical operations and patient care standards across a 36-bed unit, improving patient satisfaction (HCAHPS) scores by 24% and maintaining 100% JCAHO compliance.",
+            "Supervised, scheduled, and mentored 40+ registered nurses and clinical support staff, reducing staff turnover by 30% over 18 months.",
+            "Responsible for updating patient care charts and helping clinical staff during shift handoffs."
+          ]
+        },
+        {
+          role: "Senior Registered Nurse & Charge Nurse",
+          company: "St. Luke's Community Hospital",
+          period: "2018 – 2022",
+          bullets: [
+            "Coordinated rapid triage and multidisciplinary care plans for 25+ patients per shift, cutting average discharge turnaround time by 19%.",
+            "Led unit-wide medication safety and infection-control audit initiative that reduced preventable clinical incidents by 35%."
+          ]
+        }
+      ]
+    };
+  }
+
+  if (/(educat|teach|school|curriculum|academic|instructor|professor|principal|training)/.test(combined)) {
+    const role = primaryRole || "Lead Educator & Curriculum Specialist";
+    return {
+      skills: [
+        { name: "Curriculum Design & Instructional Strategy", level: 95, demand: 95 },
+        { name: "Classroom Management & Student Engagement", level: 94, demand: 92 },
+        { name: "Differentiated Instruction & IEP Support", level: 90, demand: 91 },
+        { name: "Assessment Data & Learning Outcomes", level: 88, demand: 89 },
+        { name: "Educator Coaching & Professional Development", level: 86, demand: 88 },
+        { name: "Parent, Community & Stakeholder Relations", level: 92, demand: 90 }
+      ],
+      education: "M.Ed. in Curriculum & Instruction | B.A. in Education | State Teaching & Instructional Leadership License",
+      summary: `Dedicated ${role} with 8+ years designing standards-aligned curriculum, coaching educators, and fostering inclusive learning environments that raise student proficiency and engagement.`,
+      sampleExperience: [
+        {
+          role: role,
+          company: "Oakridge Public Schools / Learning Academy",
+          period: "2021 – Present",
+          bullets: [
+            "Designed and implemented differentiated literacy and STEM curriculum across 12 classrooms, increasing student standardized proficiency scores by 22% within one academic year.",
+            "Mentored 15+ faculty members on instructional best practices and classroom technology integration, achieving 96% educator adoption.",
+            "Responsible for grading student assignments and organizing parent-teacher conferences."
+          ]
+        },
+        {
+          role: "Classroom Teacher & Grade-Level Lead",
+          company: "Westside Elementary & Middle School",
+          period: "2017 – 2021",
+          bullets: [
+            "Led individualized learning plans (IEPs/504s) and small-group interventions for 110+ students, improving reading and math growth targets by 28%.",
+            "Spearheaded after-school enrichment and family engagement programs attended by 350+ students and parents."
+          ]
+        }
+      ]
+    };
+  }
+
+  if (/(finance|account|cpa|audit|tax|banking|treasury|fp&a|controller|bookkeep)/.test(combined)) {
+    const role = primaryRole || "Senior Financial Analyst & Accounting Manager";
+    return {
+      skills: [
+        { name: "Financial Modeling, FP&A & Forecasting", level: 95, demand: 95 },
+        { name: "GAAP Accounting, Month-End Close & Audit", level: 92, demand: 94 },
+        { name: "Budgeting, Variance & P&L Analysis", level: 94, demand: 92 },
+        { name: "Executive Financial Reporting & Dashboards", level: 89, demand: 90 },
+        { name: "ERP Systems (NetSuite / SAP / Advanced Excel)", level: 88, demand: 91 },
+        { name: "Internal Controls & Regulatory Compliance", level: 86, demand: 88 }
+      ],
+      education: "B.S. in Finance & Accounting | Certified Public Accountant (CPA) / MBA",
+      summary: `Results-driven ${role} with 8+ years managing $45M+ budgets, leading GAAP month-end close cycles, and delivering executive FP&A insights that protect margins and guide strategic capital allocation.`,
+      sampleExperience: [
+        {
+          role: role,
+          company: "Crestview Financial & Corporate Holdings",
+          period: "2021 – Present",
+          bullets: [
+            "Directed annual budgeting and quarterly FP&A forecasting for a $48M business unit, improving forecast accuracy to 98.2% and identifying $1.4M in annual cost savings.",
+            "Streamlined GAAP month-end close procedures across 5 entities, reducing close cycle time by 35% (from 10 days to 6.5 days) with zero audit adjustments.",
+            "Responsible for preparing monthly expense reports and assisting department heads with budget tracking."
+          ]
+        },
+        {
+          role: "Financial Analyst / Staff Accountant",
+          company: "Apex Advisory & Accounting LLP",
+          period: "2018 – 2021",
+          bullets: [
+            "Built automated multi-year cash flow and margin analysis models in Excel and ERP systems for 25+ commercial accounts.",
+            "Led external audit preparation and internal SOX compliance reviews with 100% on-time regulatory filing."
+          ]
+        }
+      ]
+    };
+  }
+
+  if (/(hr\b|human resources|recruit|talent|people ops|payroll|benefits|onboarding|shrm)/.test(combined)) {
+    const role = primaryRole || "Senior Human Resources Manager / HRBP";
+    return {
+      skills: [
+        { name: "Talent Acquisition & Workforce Planning", level: 94, demand: 94 },
+        { name: "Employee Relations & Performance Management", level: 95, demand: 95 },
+        { name: "Compensation, Benefits & HRIS Administration", level: 89, demand: 90 },
+        { name: "Organizational Development & Culture", level: 92, demand: 91 },
+        { name: "Employment Law, FMLA/EEO & Compliance", level: 90, demand: 92 },
+        { name: "Onboarding, Training & Retention Strategy", level: 91, demand: 90 }
+      ],
+      education: "B.A. in Human Resource Management | SHRM-SCP / PHR Certified",
+      summary: `Strategic ${role} with 8+ years partnering with executive leadership to scale high-performing teams, reduce employee turnover, and administer compliant HR operations across 500+ person organizations.`,
+      sampleExperience: [
+        {
+          role: role,
+          company: "Horizon National Enterprises",
+          period: "2021 – Present",
+          bullets: [
+            "Partnered with leadership across 400+ employees on workforce planning, performance management, and employee engagement, reducing voluntary turnover by 27% YoY.",
+            "Redesigned end-to-end talent acquisition and onboarding workflows in Workday HRIS, cutting average time-to-hire by 31% across 85+ open roles.",
+            "Assisted managers with employee relations questions and annual benefits open enrollment."
+          ]
+        },
+        {
+          role: "HR Generalist & Talent Specialist",
+          company: "Summit Operations Group",
+          period: "2018 – 2021",
+          bullets: [
+            "Administered multi-state payroll, benefits, FMLA/ADA compliance, and handbook policies for 220+ staff with 100% audit compliance.",
+            "Launched manager leadership training series that improved internal promotion readiness by 34%."
+          ]
+        }
+      ]
+    };
+  }
+
+  if (/(sales|account executive|client success|customer success|business development|retail|hospitality|real estate)/.test(combined)) {
+    const role = primaryRole || "Senior Account Executive & Client Success Director";
+    return {
+      skills: [
+        { name: "Consultative Sales & New Business Development", level: 95, demand: 95 },
+        { name: "Strategic Account Management & Retention", level: 94, demand: 94 },
+        { name: "Contract Negotiation & Executive Closing", level: 91, demand: 92 },
+        { name: "Pipeline Forecasting & CRM Management", level: 89, demand: 90 },
+        { name: "Client Onboarding & Relationship Expansion", level: 92, demand: 91 },
+        { name: "Territory Strategy & Cross-Selling", level: 88, demand: 89 }
+      ],
+      education: "B.S. in Business & Communications | Certified Strategic Account & Sales Leader",
+      summary: `High-performing ${role} with 8+ years exceeding revenue quotas, managing $12M+ client portfolios, and cultivating long-term executive partnerships with 96%+ client retention.`,
+      sampleExperience: [
+        {
+          role: role,
+          company: "Pinnacle Commercial Solutions",
+          period: "2021 – Present",
+          bullets: [
+            "Generated $4.8M in net-new annual revenue (128% of quota) by expanding strategic client relationships and closing multi-year enterprise contracts.",
+            "Managed a portfolio of 65+ key accounts with a 96% renewal rate and 32% year-over-year account expansion.",
+            "Helped prepare client proposals and updated CRM pipeline records for weekly sales meetings."
+          ]
+        },
+        {
+          role: "Account Manager & Client Success Lead",
+          company: "Atlas Business Partners",
+          period: "2018 – 2021",
+          bullets: [
+            "Onboarded and supported 90+ commercial clients, increasing customer satisfaction (CSAT) scores from 82% to 95%.",
+            "Spearheaded referral and upsell initiatives that added $1.6M in incremental territory revenue."
+          ]
+        }
+      ]
+    };
+  }
+
+  if (/(marketing|brand|communications|public relations|media|creative|design|copywrit|event)/.test(combined)) {
+    const role = primaryRole || "Marketing & Brand Communications Director";
+    return {
+      skills: [
+        { name: "Integrated Marketing & Brand Strategy", level: 95, demand: 95 },
+        { name: "Multi-Channel Campaigns & Lead Generation", level: 92, demand: 93 },
+        { name: "Content Strategy, PR & Executive Storytelling", level: 94, demand: 91 },
+        { name: "Audience Analytics & ROI Attribution", level: 88, demand: 90 },
+        { name: "Creative Direction & Agency Management", level: 90, demand: 89 },
+        { name: "Events, Community & Go-To-Market Launches", level: 89, demand: 88 }
+      ],
+      education: "B.A. in Marketing, Communications & Journalism | Digital & Brand Strategy Certified",
+      summary: `Creative and analytical ${role} with 8+ years leading multi-channel brand campaigns, public relations, and audience growth initiatives that drive measurable revenue and market visibility.`,
+      sampleExperience: [
+        {
+          role: role,
+          company: "Luminary Brand & Media Group",
+          period: "2021 – Present",
+          bullets: [
+            "Directed integrated brand and digital campaigns across 6 channels, growing qualified customer inquiries by 145% and improving marketing ROI by 2.4x.",
+            "Led a creative and communications team of 8 specialists, launching 14 flagship product and community campaigns on time and under budget.",
+            "Managed social media calendars and wrote press releases for company announcements."
+          ]
+        },
+        {
+          role: "Senior Marketing & Communications Specialist",
+          company: "Veritas Consumer & Corporate Brands",
+          period: "2018 – 2021",
+          bullets: [
+            "Orchestrated national PR, email lifecycle, and event marketing programs reaching 250,000+ customers and increasing brand engagement by 38%.",
+            "Redesigned customer journey messaging and collateral, lifting campaign conversion rates by 26%."
+          ]
+        }
+      ]
+    };
+  }
+
+  if (/(supply chain|logistics|manufacturing|warehouse|procurement|engineering|construction|facilities|skilled trade|plant)/.test(combined)) {
+    const role = primaryRole || "Supply Chain & Facilities Operations Manager";
+    return {
+      skills: [
+        { name: "Supply Chain, Logistics & Inventory Control", level: 95, demand: 95 },
+        { name: "Vendor Procurement & Contract Negotiation", level: 92, demand: 93 },
+        { name: "Lean Six Sigma & Continuous Improvement", level: 90, demand: 92 },
+        { name: "OSHA Safety, Quality & Regulatory Compliance", level: 94, demand: 94 },
+        { name: "Production Scheduling & Fleet/Plant Operations", level: 89, demand: 90 },
+        { name: "Capital Budgeting & Cost Reduction", level: 88, demand: 89 }
+      ],
+      education: "B.S. in Supply Chain / Industrial Engineering | Lean Six Sigma Green Belt, OSHA-30 & APICS Certified",
+      summary: `Hands-on ${role} with 9+ years optimizing end-to-end supply chain logistics, plant/facility operations, and vendor procurement while maintaining 100% safety compliance and reducing operating costs.`,
+      sampleExperience: [
+        {
+          role: role,
+          company: "Continental Logistics & Manufacturing Corp",
+          period: "2021 – Present",
+          bullets: [
+            "Directed warehouse, fleet, and supply chain operations across 3 regional facilities (65+ staff), increasing on-time order fulfillment from 86% to 98.7%.",
+            "Negotiated supplier and freight contracts totaling $14M, reducing unit material and shipping costs by 19% ($1.6M annual savings).",
+            "Responsible for tracking inventory levels and overseeing daily facility safety checks."
+          ]
+        },
+        {
+          role: "Operations & Procurement Supervisor",
+          company: "Midwest Industrial Supply",
+          period: "2017 – 2021",
+          bullets: [
+            "Implemented Lean 5S workflow and preventive maintenance schedules, cutting equipment downtime by 34% and achieving 1,200+ injury-free workdays.",
+            "Reduced inventory carrying costs by 22% through automated demand forecasting and cycle counting."
+          ]
+        }
+      ]
+    };
+  }
+
+  // Default: Universal Business, Operations, Consulting, Legal/Public Service, or Tech
+  const role = primaryRole || "Senior Operations & Program Manager";
+  return {
+    skills: [
+      { name: "Strategic Planning & Operations Management", level: 95, demand: 95 },
+      { name: "Project & Program Execution", level: 93, demand: 94 },
+      { name: "Budgeting, P&L & Resource Allocation", level: 90, demand: 92 },
+      { name: "Cross-Functional Team Leadership", level: 94, demand: 93 },
+      { name: "Process Improvement & Change Management", level: 89, demand: 90 },
+      { name: "Stakeholder & Client Relationship Management", level: 92, demand: 91 }
+    ],
+    education: "Bachelor's Degree in Business Administration / Management | PMP & Executive Leadership Certified",
+    summary: `Accomplished ${role} with 8+ years leading strategic programs, optimizing organizational workflows, managing multi-million-dollar budgets, and aligning cross-functional teams to deliver measurable results.`,
+    sampleExperience: PERSONA_PRESETS.pm.experience
+  };
 }
 
 function processAndStoreHeadshotFile(file, onDone) {
@@ -671,6 +1026,7 @@ function setWizardStep(stepNum) {
 }
 
 function renderGuidedWizard() {
+  const fieldEl = document.getElementById("wizCareerField");
   const rolesEl = document.getElementById("wizTargetRoles");
   const goalEl = document.getElementById("wizCareerGoal");
   const styleEl = document.getElementById("wizWorkStyle");
@@ -679,10 +1035,11 @@ function renderGuidedWizard() {
   const indEl = document.getElementById("wizIndustries");
   const resTextEl = document.getElementById("wizResumeText");
 
+  if (fieldEl && state.careerField) fieldEl.value = state.careerField;
   if (rolesEl) rolesEl.value = state.targetRoles || "";
   if (goalEl) goalEl.value = state.mission || "";
-  if (styleEl) styleEl.value = state.workStyle || "Remote / Hybrid";
-  if (salEl) salEl.value = state.minSalary || 150000;
+  if (styleEl) styleEl.value = state.workStyle || "On-site / Hybrid";
+  if (salEl) salEl.value = state.minSalary || 110000;
   if (locEl) locEl.value = state.location || "";
   if (indEl) indEl.value = state.industries || "";
 
@@ -708,14 +1065,16 @@ function renderGuidedWizard() {
 }
 
 function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
-  const roles = (document.getElementById("wizTargetRoles").value || "").trim() || "Senior Professional";
+  const careerField = (document.getElementById("wizCareerField") || {}).value || "Business, Operations & Strategy";
+  const roles = (document.getElementById("wizTargetRoles").value || "").trim() || "Operations & Program Manager";
   const goal = (document.getElementById("wizCareerGoal").value || "").trim();
-  const workStyle = document.getElementById("wizWorkStyle").value || "Remote / Hybrid";
-  const minSalary = Number(document.getElementById("wizMinSalary").value) || 150000;
-  const location = (document.getElementById("wizLocation").value || "").trim() || "United States (Remote)";
-  const industries = (document.getElementById("wizIndustries").value || "").trim() || "Technology, SaaS, Enterprise";
+  const workStyle = document.getElementById("wizWorkStyle").value || "On-site / Hybrid";
+  const minSalary = Number(document.getElementById("wizMinSalary").value) || 105000;
+  const location = (document.getElementById("wizLocation").value || "").trim() || "United States";
+  const industries = (document.getElementById("wizIndustries").value || "").trim() || careerField;
 
   const primaryRole = (roles.split(",")[0] || "Target Role").trim();
+  state.careerField = careerField;
   state.targetRoles = roles;
   state.headline = primaryRole;
   state.mission =
@@ -725,21 +1084,55 @@ function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
   state.minSalary = minSalary;
   state.location = location;
   state.industries = industries;
-  state.infographicTagline = `Available for ${primaryRole} Roles`;
+  state.infographicTagline = `Available for ${primaryRole} Opportunities`;
 
   // Auto-select industry-calibrated infographic theme (Deloitte / Microsoft / Healthcare / Creative)
-  state.infographicTheme = detectIndustryThemeFromProfile(industries, roles);
+  state.infographicTheme = detectIndustryThemeFromProfile(industries, roles, careerField);
+
+  // Calibrate career-field-appropriate baseline skills, education, and summary before parsing raw resume text
+  const fieldTemplate = getCareerFieldTemplateData(careerField, roles, industries);
+  state.skills = fieldTemplate.skills;
+  state.educationText = fieldTemplate.education;
+  state.summary = fieldTemplate.summary;
 
   // Auto-generate 3-Horizon Trajectory in the background
   state.horizons = {
     h1: `Excel in a ${primaryRole} role and deliver high-visibility 90-day wins.`,
     h2: `Expand leadership scope and drive strategic initiatives across ${industries}.`,
-    h3: `Long-term executive leadership aligned with: ${state.mission}`
+    h3: `Long-term career leadership aligned with: ${state.mission}`
   };
+
+  // Update saved CRM jobs to match the candidate's actual target roles and career field
+  state.savedJobs = [
+    {
+      id: "crm-custom-1",
+      title: primaryRole,
+      company: "Leading Regional / National Employer",
+      location: `${location} (${workStyle})`,
+      salary: `$${Math.round(minSalary / 1000)}k - $${Math.round((minSalary * 1.2) / 1000)}k`,
+      matchScore: 95,
+      stage: "Saved",
+      url: `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(primaryRole)}`,
+      description: `${primaryRole} role focused on ${fieldTemplate.skills.map((s) => s.name).join(", ")} across ${industries}.`
+    },
+    ...(CURATED_REAL_JOBS.slice(0, 2).map((j, idx) => ({
+      id: `crm-init-${idx}`,
+      title: j.title,
+      company: j.company,
+      location: j.location,
+      salary: j.salary,
+      matchScore: 88 - idx * 3,
+      stage: "Saved",
+      url: j.url,
+      description: j.description
+    })))
+  ];
 
   // Parse the provided resume text and extract experience, skills, and KPIs in the background
   if (rawResumeText && rawResumeText.trim()) {
     parseRawResumeTextIntoState(rawResumeText, { silent: true });
+  } else {
+    state.experience = fieldTemplate.sampleExperience;
   }
 
   state.onboardingCompleted = true;
@@ -1107,20 +1500,20 @@ function generateXYZRewrites(rawBullet, rIdx = null, bIdx = null) {
     .replace(/\.$/, "");
 
   const targetSkill =
-    state.skills && state.skills[0] ? state.skills[0].name : "cross-functional execution";
+    state.skills && state.skills[0] ? state.skills[0].name : "strategic execution";
 
   const rewrites = [
     {
-      style: "Executive Revenue & Scale (XYZ Formula)",
-      text: `Spearheaded ${coreTopic}, driving a 34% improvement in team velocity and contributing $2.4M in annualized business impact across core workflows.`
+      style: "Measurable Impact & Results (Action + Outcome + Metric)",
+      text: `Spearheaded ${coreTopic}, driving a 28% improvement in operational performance and delivering measurable quality gains across the organization.`
     },
     {
-      style: "Efficiency & Speed Optimization",
-      text: `Architected and launched ${coreTopic} utilizing ${targetSkill}, cutting cycle time by 45% (from 14 days to 7.5 days) for 25,000+ active users.`
+      style: "Efficiency, Quality & Service Delivery",
+      text: `Directed and streamlined ${coreTopic} utilizing ${targetSkill}, reducing turnaround time by 35% while maintaining 98%+ compliance and satisfaction standards.`
     },
     {
-      style: "High-Ownership Leadership & Adoption",
-      text: `Owned end-to-end delivery of ${coreTopic} across engineering, design, and GTM stakeholders, achieving 92% adoption within 90 days of launch.`
+      style: "Cross-Functional Leadership & Team Execution",
+      text: `Led end-to-end execution of ${coreTopic} in partnership with key stakeholders and leadership, achieving 95%+ adoption and exceeding quarterly departmental goals.`
     }
   ];
 
@@ -1215,7 +1608,7 @@ function renderAtsBuilder() {
     state.contactLinkedin = `linkedin.com/in/${slug}`;
   }
   if (!state.educationText) {
-    state.educationText = "B.S. in Computer Science & Business Administration | Certified Product & AI Leader";
+    state.educationText = "Bachelor's Degree & Professional Industry Certifications";
   }
 
   emailInp.value = state.contactEmail;
@@ -1291,12 +1684,12 @@ function buildAtsResumeHtml(job, fontClass) {
       </section>
 
       <section class="ats-section">
-        <h4 class="ats-section-title">Core Competencies & Technical Skills</h4>
+        <h4 class="ats-section-title">Core Competencies & Professional Skills</h4>
         <div class="ats-skills-line">
           <strong>Core Competencies:</strong> ${escapeHtml(skillsList.join(" • "))}
         </div>
         <div class="ats-skills-line">
-          <strong>Target Domains & Industries:</strong> ${escapeHtml(state.industries || "Enterprise SaaS, AI/ML, Technology")}
+          <strong>Target Sectors & Specialties:</strong> ${escapeHtml(state.industries || state.careerField || "Operations, Leadership & Cross-Functional Execution")}
         </div>
       </section>
 
@@ -1370,7 +1763,7 @@ function buildAtsCoverLetterHtml(job, fontClass) {
         <p>Dear ${escapeHtml(companyName)} Hiring Team,</p>
 
         <p>
-          I am writing to submit my application for the <strong>${escapeHtml(roleTitle)}</strong> role. With ${escapeHtml(state.yearsExp || 8)}+ years of experience and a proven track record delivering quantified business outcomes across ${escapeHtml(state.industries || "technology and SaaS")}, I am excited by the opportunity to help ${escapeHtml(companyName)} accelerate its roadmap and execution.
+          I am writing to submit my application for the <strong>${escapeHtml(roleTitle)}</strong> position. With ${escapeHtml(state.yearsExp || 8)}+ years of experience and a proven track record delivering measurable outcomes across ${escapeHtml(state.industries || state.careerField || "leadership and operations")}, I am excited by the opportunity to contribute to ${escapeHtml(companyName)}'s continued success and operational excellence.
         </p>
 
         <p>
@@ -1452,16 +1845,16 @@ function downloadAtsWordDoc() {
 // MODULE 3: ENTERPRISE CANDIDATE INFOGRAPHIC STUDIO (DELOITTE / MICROSOFT)
 // ============================================================================
 const INDUSTRY_THEME_LABELS = {
-  deloitte: "Deloitte Consulting Advisory One-Pager (Calibrated for Strategy, Consulting, Finance & Operations)",
-  microsoft: "Microsoft Fluent Executive Profile (Calibrated for Technology, Engineering, Product & AI)",
-  healthcare: "Clinical & Life Sciences Executive Brief (Calibrated for Healthcare, Biotech & Nursing)",
-  creative: "Executive Editorial Brand Sheet (Calibrated for Marketing, Media & Design Leadership)"
+  deloitte: "Deloitte Consulting & Corporate One-Pager (Calibrated for Business, Finance, Operations, HR, Sales & Legal)",
+  microsoft: "Microsoft Modern Enterprise Profile (Calibrated for Corporate Management, Project Delivery, Data & Tech)",
+  healthcare: "Healthcare, Education & Public Service Brief (Calibrated for Clinical, Nursing, Teaching & Nonprofit)",
+  creative: "Executive Editorial & Brand Sheet (Calibrated for Marketing, Communications, Media, Design & Hospitality)"
 };
 
 function getNormalizedInfographicTheme() {
   const valid = ["deloitte", "microsoft", "healthcare", "creative"];
   if (valid.includes(state.infographicTheme)) return state.infographicTheme;
-  return detectIndustryThemeFromProfile(state.industries, state.targetRoles);
+  return detectIndustryThemeFromProfile(state.industries, state.targetRoles, state.careerField);
 }
 
 function renderInfographic() {
@@ -1545,14 +1938,15 @@ function renderInfographicCanvasOnly() {
     ? `<img src="${state.headshotDataUrl}" alt="${escapeHtml(state.name)} Headshot" />`
     : `<span>${escapeHtml(getInitials(state.name))}</span>`;
 
+  const sectorHeader = (state.careerField || state.industries || "EXECUTIVE LEADERSHIP").split(",")[0].trim().toUpperCase();
   const practiceLabel =
     activeTheme === "deloitte"
-      ? "EXECUTIVE ADVISORY & LEADERSHIP PROFILE"
+      ? `${sectorHeader} • DELOITTE ADVISORY STANDARD PROFILE`
       : activeTheme === "microsoft"
-      ? "CLOUD, AI & PRODUCT LEADERSHIP PROFILE"
+      ? `${sectorHeader} • MICROSOFT ENTERPRISE PROFILE`
       : activeTheme === "healthcare"
-      ? "CLINICAL & HEALTHCARE LEADERSHIP BRIEF"
-      : "EXECUTIVE BRAND & GROWTH PORTFOLIO";
+      ? `${sectorHeader} • CLINICAL, EDUCATION & SERVICE BRIEF`
+      : `${sectorHeader} • EXECUTIVE BRAND & PORTFOLIO`;
 
   canvas.innerHTML = `
     <!-- Top Corporate Header Banner (Deloitte / Microsoft Style) -->
@@ -1719,31 +2113,77 @@ function scoreJobAgainstProfile(job) {
   };
 }
 
+function getDynamicRoleCuratedJobs(query) {
+  const primaryRole = ((query || state.targetRoles || state.headline || "Operations Manager").split(",")[0] || "Operations Manager").trim();
+  const topSkillNames = (state.skills || []).slice(0, 5).map((s) => s.name);
+  const baseSal = Number(state.minSalary) || 105000;
+  const salLow = Math.round(baseSal / 1000);
+  const salHigh = Math.round((baseSal * 1.22) / 1000);
+  const qEnc = encodeURIComponent(primaryRole);
+
+  return [
+    {
+      id: "dyn-match-1",
+      title: `${primaryRole}`,
+      company: "Leading National Employer (Direct Hiring Portal)",
+      location: `${state.location || "United States"} (${state.workStyle || "Hybrid / Remote"})`,
+      salary: `$${salLow},000 - $${salHigh},000`,
+      type: "Full Time",
+      category: state.careerField || "General",
+      url: `https://www.linkedin.com/jobs/search/?keywords=${qEnc}`,
+      publishedAt: "2026-10-27",
+      tags: topSkillNames.slice(0, 4).length ? topSkillNames.slice(0, 4) : ["Leadership", "Operations", "Strategy"],
+      description: `Seeking an experienced ${primaryRole} to lead high-impact initiatives across ${state.industries || state.careerField || "our organization"}. Key competencies include ${topSkillNames.join(", ") || "strategic execution, stakeholder collaboration, and measurable performance delivery"}.`,
+      source: "Personalized Target Match"
+    },
+    {
+      id: "dyn-match-2",
+      title: `Senior / Lead ${primaryRole}`,
+      company: "Regional Enterprise & Advisory Partners",
+      location: state.workStyle || "Hybrid / On-site",
+      salary: `$${salLow + 10},000 - $${salHigh + 15},000`,
+      type: "Full Time",
+      category: state.careerField || "General",
+      url: `https://www.indeed.com/jobs?q=${qEnc}`,
+      publishedAt: "2026-10-27",
+      tags: topSkillNames.slice(1, 5).length ? topSkillNames.slice(1, 5) : ["Team Leadership", "Process Improvement"],
+      description: `Lead departmental excellence and cross-functional teams as a Senior ${primaryRole}. Ideal candidates bring proven results in ${topSkillNames.join(", ") || "operations and team leadership"}.`,
+      source: "Verified Career Match"
+    },
+    ...CURATED_REAL_JOBS
+  ];
+}
+
 function renderJobsModule() {
-  const primaryRole = ((state.targetRoles || "Product Manager").split(",")[0] || "Product Manager").trim();
+  const primaryRole = ((state.targetRoles || state.headline || "Operations Manager").split(",")[0] || "Operations Manager").trim();
   const searchInput = document.getElementById("jobSearchInput");
   if (!searchInput.value) {
     searchInput.value = primaryRole;
   }
 
-  // Deep links to major real job boards with candidate's exact target role & location
+  // Deep links to major real job boards across ALL industries with candidate's exact target role & location
   const qEnc = encodeURIComponent(primaryRole);
+  const locEnc = encodeURIComponent(state.location || "");
   const linksBar = document.getElementById("deepBoardLinksBar");
   linksBar.innerHTML = `
-    <span>Launch Pre-Filtered Live Boards for "${escapeHtml(primaryRole)}":</span>
-    <a class="board-pill" href="https://www.linkedin.com/jobs/search/?keywords=${qEnc}" target="_blank" rel="noopener">LinkedIn Jobs ↗</a>
-    <a class="board-pill" href="https://www.indeed.com/jobs?q=${qEnc}" target="_blank" rel="noopener">Indeed ↗</a>
-    <a class="board-pill" href="https://www.ycombinator.com/jobs" target="_blank" rel="noopener">YC Startup Jobs ↗</a>
-    <a class="board-pill" href="https://wellfound.com/jobs" target="_blank" rel="noopener">Wellfound ↗</a>
-    <a class="board-pill" href="https://www.google.com/search?q=${encodeURIComponent(primaryRole + ' site:boards.greenhouse.io OR site:jobs.lever.co')}" target="_blank" rel="noopener">Greenhouse / Lever Direct ↗</a>
+    <span>Launch Live Job Boards for "${escapeHtml(primaryRole)}":</span>
+    <a class="board-pill" href="https://www.linkedin.com/jobs/search/?keywords=${qEnc}&location=${locEnc}" target="_blank" rel="noopener">LinkedIn Jobs ↗</a>
+    <a class="board-pill" href="https://www.indeed.com/jobs?q=${qEnc}&l=${locEnc}" target="_blank" rel="noopener">Indeed ↗</a>
+    <a class="board-pill" href="https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${qEnc}" target="_blank" rel="noopener">Glassdoor ↗</a>
+    <a class="board-pill" href="https://www.usajobs.gov/Search/Results?k=${qEnc}" target="_blank" rel="noopener">USAJOBS (Gov / Public) ↗</a>
+    <a class="board-pill" href="https://www.google.com/search?q=${encodeURIComponent(primaryRole + ' jobs ' + (state.location || ''))}&ibp=htl;jobs" target="_blank" rel="noopener">Google Jobs Aggregator ↗</a>
   `;
 
+  if (!currentJobsFeed || currentJobsFeed.length === 0) {
+    currentJobsFeed = getDynamicRoleCuratedJobs(primaryRole);
+  }
   renderJobsFeedList(currentJobsFeed);
 }
 
 async function fetchLiveJobs(query, category) {
   const badge = document.getElementById("jobFeedSourceBadge");
-  badge.textContent = "Searching Live API...";
+  badge.textContent = "Searching Live Feeds...";
+  const dynamicCurated = getDynamicRoleCuratedJobs(query);
 
   // 1. Try local backend proxy first
   try {
@@ -1753,8 +2193,8 @@ async function fetchLiveJobs(query, category) {
     if (resp.ok) {
       const data = await resp.json();
       if (data.ok && Array.isArray(data.jobs) && data.jobs.length > 0) {
-        currentJobsFeed = [...data.jobs, ...CURATED_REAL_JOBS];
-        badge.textContent = `Live Remotive API (${data.jobs.length} live + curated)`;
+        currentJobsFeed = [...dynamicCurated.slice(0, 2), ...data.jobs, ...CURATED_REAL_JOBS];
+        badge.textContent = `Live Job Feed (${data.jobs.length} live + multi-industry matches)`;
         renderJobsFeedList(currentJobsFeed);
         return;
       }
@@ -1783,30 +2223,30 @@ async function fetchLiveJobs(query, category) {
         publishedAt: (item.publication_date || "").slice(0, 10),
         tags: (item.tags || []).slice(0, 8),
         description: String(item.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 2500),
-        source: "Remotive Live API"
+        source: "Live Job Feed"
       }));
       if (liveItems.length > 0) {
-        currentJobsFeed = [...liveItems, ...CURATED_REAL_JOBS];
-        badge.textContent = `Live Remotive API (${liveItems.length} live + curated)`;
+        currentJobsFeed = [...dynamicCurated.slice(0, 2), ...liveItems, ...CURATED_REAL_JOBS];
+        badge.textContent = `Live Job Feed (${liveItems.length} live + multi-industry matches)`;
         renderJobsFeedList(currentJobsFeed);
         return;
       }
     }
   } catch (err2) {
-    console.warn("Direct Remotive API fallback:", err2);
+    console.warn("Direct API fallback:", err2);
   }
 
-  // 3. Filter curated jobs locally if offline or specific query
+  // 3. Filter multi-industry curated + dynamic role jobs
   const qLower = (query || "").toLowerCase();
-  const filtered = CURATED_REAL_JOBS.filter(
+  const filtered = dynamicCurated.filter(
     (j) =>
       !qLower ||
       j.title.toLowerCase().includes(qLower) ||
       j.description.toLowerCase().includes(qLower) ||
       (j.tags || []).some((t) => t.toLowerCase().includes(qLower))
   );
-  currentJobsFeed = filtered.length ? filtered : CURATED_REAL_JOBS;
-  badge.textContent = "Curated High-Signal Feed";
+  currentJobsFeed = filtered.length ? filtered : dynamicCurated;
+  badge.textContent = "Multi-Industry Matched Feed";
   renderJobsFeedList(currentJobsFeed);
 }
 
@@ -1898,13 +2338,15 @@ function runDeepJdAnalysis(title, company, descText) {
     tags: []
   });
 
-  // Also extract notable domain terms from JD
-  const commonTechTerms = [
-    "AI", "LLM", "SaaS", "SQL", "Python", "TypeScript", "React", "Roadmap",
-    "Enterprise", "PLG", "Experimentation", "Kubernetes", "API", "Growth",
-    "Analytics", "Cloud", "Machine Learning", "Architecture", "GTM"
+  // Also extract notable domain terms from JD across all career fields
+  const universalCareerTerms = [
+    "Leadership", "Operations", "Budget", "P&L", "Strategy", "Compliance",
+    "Patient Care", "Clinical", "Curriculum", "Financial Modeling", "GAAP",
+    "Audit", "Talent", "HRIS", "Account Management", "Client Retention",
+    "Supply Chain", "Logistics", "Lean Six Sigma", "Project Management",
+    "Stakeholder", "Marketing", "Brand", "Analytics", "Cross-Functional"
   ];
-  const jdHits = commonTechTerms.filter((term) =>
+  const jdHits = universalCareerTerms.filter((term) =>
     new RegExp(`\\b${term}\\b`, "i").test(cleanDesc)
   );
 
@@ -2542,12 +2984,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   document.getElementById("wizFillSampleResumeBtn").onclick = () => {
-    const sample = PERSONA_PRESETS.pm;
+    const careerField = (document.getElementById("wizCareerField") || {}).value || state.careerField || "Business, Operations & Strategy";
+    const roles = (document.getElementById("wizTargetRoles") || {}).value || state.targetRoles || "";
+    const industries = (document.getElementById("wizIndustries") || {}).value || state.industries || "";
+    const tpl = getCareerFieldTemplateData(careerField, roles, industries);
     const sampleText = [
-      sample.summary,
-      ...sample.experience.map(
+      tpl.summary,
+      ...tpl.sampleExperience.map(
         (e) => `${e.role} | ${e.company} (${e.period})\n` + e.bullets.map((b) => `• ${b}`).join("\n")
-      )
+      ),
+      `Education & Credentials: ${tpl.education}`
     ].join("\n\n");
     document.getElementById("wizResumeText").value = sampleText;
   };
@@ -2753,15 +3199,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // CRM Custom Opportunity & Tailoring
   document.getElementById("addCustomJobModalBtn").onclick = () => {
-    const title = prompt("Role Title:", "Staff Product Manager");
+    const defaultRole = ((state.targetRoles || state.headline || "Operations Manager").split(",")[0] || "Operations Manager").trim();
+    const title = prompt("Role Title:", defaultRole);
     if (!title) return;
-    const company = prompt("Company Name:", "Acme AI") || "Target Company";
+    const company = prompt("Organization / Employer Name:", "Target Organization") || "Target Organization";
     addJobToCRM({
       title,
       company,
-      location: state.workStyle || "Remote",
-      salary: "$185,000+",
-      matchScore: 90,
+      location: state.workStyle || "Hybrid / Remote",
+      salary: "$" + Math.round((Number(state.minSalary) || 105000) / 1000) + "k+ Target",
+      matchScore: 92,
       stage: "Saved",
       url: "",
       description: `${title} at ${company}`
@@ -2847,26 +3294,60 @@ function parseRawResumeTextIntoState(rawText, opts = {}) {
     state.summary = summaryLines.join(" ").slice(0, 420);
   }
 
-  // 2. Automatically extract key skills in the background
+  // 2. Automatically extract key skills in the background across ALL career fields
   const SKILL_DICTIONARY = [
-    "Product Strategy", "Roadmapping", "AI / Machine Learning", "LLM Workflows", "B2B SaaS",
-    "SQL & Analytics", "Python", "TypeScript", "React", "Cross-Functional Leadership",
-    "Agile / Scrum", "Project Management", "Enterprise Sales & GTM", "PLG & Monetization",
-    "Data Analysis", "Cloud Architecture", "Customer Success", "UX / Product Design",
-    "Financial Modeling", "Marketing Strategy", "Operations Management", "Healthcare Compliance"
+    // Business, Operations & Management
+    "Operations Management", "Strategic Planning", "Project Management", "Program Management",
+    "Budgeting & P&L Management", "Process Improvement", "Change Management", "Cross-Functional Leadership",
+    "Vendor & Contract Management", "Stakeholder Management", "KPI & Performance Reporting",
+    // Healthcare, Nursing & Clinical
+    "Patient Care & Clinical Excellence", "Care Coordination", "HIPAA & Regulatory Compliance",
+    "EHR / Epic Documentation", "Clinical Triage & Patient Safety", "Nursing Leadership (RN / BSN)",
+    "Healthcare Administration", "Medical Case Management",
+    // Education, Teaching & Training
+    "Curriculum Development", "Instructional Design", "Classroom Management", "Differentiated Instruction",
+    "IEP & Student Assessment", "Educator Coaching & Training", "Academic Leadership",
+    // Finance, Accounting & Legal
+    "Financial Modeling & FP&A", "GAAP Accounting & Audit", "Variance & Margin Analysis",
+    "Tax & Regulatory Compliance", "Internal Controls & Risk Management", "Contract Drafting & Legal Research",
+    // HR & People Operations
+    "Talent Acquisition & Recruiting", "Employee Relations", "Performance Management",
+    "Compensation & Benefits (HRIS)", "Workforce Planning & Retention", "Onboarding & Training",
+    // Sales, Marketing & Customer Experience
+    "Consultative Sales & Business Development", "Strategic Account Management", "Client Retention & Success",
+    "Brand & Marketing Strategy", "Public Relations & Communications", "Content & Campaign Management",
+    // Supply Chain, Manufacturing & Skilled Trades
+    "Supply Chain & Logistics", "Inventory & Warehouse Management", "Lean Six Sigma & Quality Control",
+    "OSHA & Workplace Safety", "Facilities & Plant Operations", "Procurement & Sourcing",
+    // Technology, Data & Product
+    "Product Strategy & Roadmapping", "Data Analysis & SQL", "Software Engineering", "Cloud & IT Systems", "AI & Workflow Automation"
   ];
   const lowerRaw = rawText.toLowerCase();
   const detectedSkills = SKILL_DICTIONARY.filter((sk) => {
-    const tokens = sk.toLowerCase().split(/[\s/&]+/).filter((t) => t.length > 2);
+    const tokens = sk.toLowerCase().split(/[\s/&(),]+/).filter((t) => t.length > 2);
     return tokens.some((tok) => lowerRaw.includes(tok));
   }).slice(0, 6);
 
-  if (detectedSkills.length >= 3) {
-    state.skills = detectedSkills.map((name, i) => ({
-      name,
-      level: i < 2 ? 92 : 84,
-      demand: 90
-    }));
+  if (detectedSkills.length >= 2) {
+    // Combine detected resume skills with career field skills so candidate always has 6 strong skills
+    const existingNames = new Set(detectedSkills.map((s) => s.toLowerCase()));
+    const fallbackSkills = (state.skills || []).filter((s) => !existingNames.has(s.name.toLowerCase()));
+    state.skills = [
+      ...detectedSkills.map((name, i) => ({
+        name,
+        level: i < 2 ? 94 : 88,
+        demand: 92
+      })),
+      ...fallbackSkills
+    ].slice(0, 6);
+  }
+
+  // Extract education / credentials line if present in raw resume
+  const eduLine = lines.find((l) =>
+    /\b(b\.s\.|b\.a\.|m\.s\.|m\.a\.|mba|m\.ed|ph\.d|bsn|rn\b|cpa\b|pmp\b|shrm|university|college|bachelor|master|degree|certified|license)/i.test(l)
+  );
+  if (eduLine && eduLine.length < 160) {
+    state.educationText = eduLine.replace(/^(education\s*&?\s*credentials?:?\s*)/i, "").trim();
   }
 
   // 3. Automatically extract numbers/metrics for the 1-Page Infographic in the background
