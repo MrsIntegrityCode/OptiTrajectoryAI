@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
+  <!-- Client-side Word (.docx) & PDF (.pdf) Resume Parsers -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 </head>
 <body>
   <!-- ================================================================ -->
@@ -366,12 +369,13 @@
             <!-- Resume File Upload Bar -->
             <div class="upload-dropzone mt-12">
               <div>
-                <strong>2. Upload Resume File (`.txt` or `.md`) or Paste Text Below</strong>
-                <p style="font-size:0.8rem; color:var(--text-secondary);">Or simply copy & paste the text from your Word/PDF resume into the box below.</p>
+                <strong>2. Upload Your Resume (Word `.docx`/`.doc`, `.pdf`, or `.txt`)</strong>
+                <p style="font-size:0.8rem; color:var(--text-secondary);">Upload your Word, PDF, or text resume directly—or copy & paste your resume text into the box below.</p>
+                <span id="wizResumeUploadStatus" class="tag tag-success hidden" style="margin-top:6px; display:inline-block;"></span>
               </div>
               <label class="btn btn-secondary btn-sm file-upload-label">
-                📂 Choose Resume File
-                <input type="file" id="wizResumeFileInput" accept=".txt,.md" hidden />
+                📂 Upload Word / PDF / TXT
+                <input type="file" id="wizResumeFileInput" accept=".pdf,.docx,.doc,.rtf,.txt,.md,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" hidden />
               </label>
             </div>
 
@@ -611,16 +615,17 @@
             <div id="experienceListEditor" class="experience-editor-list"></div>
 
             <details class="raw-paste-drawer mt-16">
-              <summary>📋 Want to upload or paste a different resume? Click here</summary>
+              <summary>📋 Want to upload or paste a different resume (Word, PDF, or TXT)? Click here</summary>
               <div class="drawer-body">
-                <div style="margin-bottom:8px;">
+                <div style="margin-bottom:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                   <label class="btn btn-secondary btn-sm file-upload-label">
-                    📂 Upload .txt/.md File
-                    <input type="file" id="resumeFileUpload" accept=".txt,.md,.json" hidden />
+                    📂 Upload Word (.docx/.doc), PDF, or TXT
+                    <input type="file" id="resumeFileUpload" accept=".pdf,.docx,.doc,.rtf,.txt,.md,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" hidden />
                   </label>
                   <button class="btn btn-ghost btn-sm" id="runAuditBtn">⚡ Re-Run Audit</button>
+                  <span id="studioResumeUploadStatus" class="tag tag-success hidden"></span>
                 </div>
-                <textarea id="rawResumePaste" class="input-field" rows="5" placeholder="Or paste your full resume text here..."></textarea>
+                <textarea id="rawResumePaste" class="input-field" rows="5" placeholder="Extracted text from your uploaded Word/PDF/TXT file will appear here (or paste directly)..."></textarea>
                 <button class="btn btn-secondary btn-sm mt-8" id="importRawResumeBtn">Import & Evaluate Text</button>
               </div>
             </details>

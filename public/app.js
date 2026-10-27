@@ -2953,14 +2953,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     setWizardStep(1);
   };
 
-  document.getElementById("wizResumeFileInput").onchange = (e) => {
-    const file = e.target.files[0];
+  document.getElementById("wizResumeFileInput").onchange = async (e) => {
+    const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      document.getElementById("wizResumeText").value = String(reader.result || "");
-    };
-    reader.readAsText(file);
+    const statusEl = document.getElementById("wizResumeUploadStatus");
+    if (statusEl) {
+      statusEl.classList.remove("hidden");
+      statusEl.textContent = `⏳ Reading ${file.name}...`;
+    }
+    try {
+      const extractedText = await extractResumeTextFromFile(file);
+      document.getElementById("wizResumeText").value = extractedText;
+      if (statusEl) {
+        statusEl.textContent = `✓ Extracted resume text from ${file.name}`;
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.textContent = `⚠️ Could not auto-extract ${file.name} — please copy & paste text below`;
+      }
+    }
   };
 
   const wizHeadshotInput = document.getElementById("wizHeadshotFileInput");
@@ -3066,15 +3077,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     generateXYZRewrites(inp.value, inp.dataset.rIdx, inp.dataset.bIdx);
   };
 
-  // Upload or Paste Raw Resume
-  document.getElementById("resumeFileUpload").onchange = (e) => {
-    const file = e.target.files[0];
+  // Upload or Paste Raw Resume (Word .docx/.doc, PDF .pdf, or TXT .txt)
+  document.getElementById("resumeFileUpload").onchange = async (e) => {
+    const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      parseRawResumeTextIntoState(String(reader.result || ""));
-    };
-    reader.readAsText(file);
+    const statusEl = document.getElementById("studioResumeUploadStatus");
+    if (statusEl) {
+      statusEl.classList.remove("hidden");
+      statusEl.textContent = `⏳ Reading ${file.name}...`;
+    }
+    try {
+      const extractedText = await extractResumeTextFromFile(file);
+      const rawBox = document.getElementById("rawResumePaste");
+      if (rawBox) rawBox.value = extractedText;
+      parseRawResumeTextIntoState(extractedText);
+      if (statusEl) {
+        statusEl.textContent = `✓ Imported ${file.name}`;
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.textContent = `⚠️ Could not read ${file.name} — paste text below`;
+      }
+    }
   };
 
   document.getElementById("importRawResumeBtn").onclick = () => {
@@ -3247,6 +3271,161 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (e) {}
 });
+
+// ============================================================================
+// MULTI-FORMAT RESUME FILE EXTRACTOR (.docx, .doc, .pdf, .rtf, .txt, .md)
+// ============================================================================
+async function extractDocxFallback(arrayBuffer) {
+  // Pure-JS ZIP parser for word/document.xml using native DecompressionStream("deflate-raw")
+  const bytes = new Uint8Array(arrayBuffer);
+  const view = new DataView(arrayBuffer);
+  let offset = 0;
+  const decoder = new TextDecoder("utf-8");
+
+  while (offset + 30 < bytes.length) {
+    const sig = view.getUint32(offset, true);
+    if (sig !== 0x04034b50) {
+      offset++;
+      continue;
+    }
+    const compression = view.getUint16(offset + 8, true);
+    const compSize = view.getUint32(offset + 18, true);
+    const nameLen = view.getUint16(offset + 26, true);
+    const extraLen = view.getUint16(offset + 28, true);
+    const fileName = decoder.decode(bytes.subarray(offset + 30, offset + 30 + nameLen));
+    const dataStart = offset + 30 + nameLen + extraLen;
+
+    if (fileName === "word/document.xml" && compSize > 0) {
+      const compData = bytes.subarray(dataStart, dataStart + compSize);
+      let xmlText = "";
+      if (compression === 0) {
+        xmlText = decoder.decode(compData);
+      } else if (compression === 8 && typeof DecompressionStream !== "undefined") {
+        const ds = new DecompressionStream("deflate-raw");
+        const writer = ds.writable.getWriter();
+        writer.write(compData);
+        writer.close();
+        const decompBuf = await new Response(ds.readable).arrayBuffer();
+        xmlText = decoder.decode(decompBuf);
+      }
+      if (xmlText) {
+        return xmlText
+          .replace(/<\/w:p>/g, "\n")
+          .replace(/<w:tab\/>/g, " ")
+          .replace(/<w:br[^/>]*\/>/g, "\n")
+          .replace(/<[^>]+>/g, "")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&quot;/g, '"')
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+      }
+    }
+    offset = dataStart + Math.max(1, compSize);
+  }
+  return "";
+}
+
+async function extractPdfFallback(arrayBuffer) {
+  // Pure-JS fallback for PDF text streams if PDF.js CDN is unreachable
+  const raw = new TextDecoder("latin1").decode(new Uint8Array(arrayBuffer));
+  const chunks = [];
+  const regex = /\(([^()\\]{2,})\)\s*Tj/g;
+  let m;
+  while ((m = regex.exec(raw)) !== null) {
+    chunks.push(m[1]);
+  }
+  return chunks.join(" ").replace(/\s+/g, " ").trim();
+}
+
+async function extractResumeTextFromFile(file) {
+  const name = (file.name || "").toLowerCase();
+
+  // 1. Word (.docx)
+  if (name.endsWith(".docx") || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    const arrayBuffer = await file.arrayBuffer();
+    if (window.mammoth && typeof window.mammoth.extractRawText === "function") {
+      try {
+        const res = await window.mammoth.extractRawText({ arrayBuffer });
+        if (res && res.value && res.value.trim()) {
+          return res.value.trim();
+        }
+      } catch (e) {
+        console.warn("Mammoth fallback:", e);
+      }
+    }
+    const fallbackText = await extractDocxFallback(arrayBuffer);
+    if (fallbackText) return fallbackText;
+    throw new Error("Could not extract .docx text");
+  }
+
+  // 2. PDF (.pdf)
+  if (name.endsWith(".pdf") || file.type === "application/pdf") {
+    const arrayBuffer = await file.arrayBuffer();
+    if (window.pdfjsLib && typeof window.pdfjsLib.getDocument === "function") {
+      try {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pageTexts = [];
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const content = await page.getTextContent();
+          let lastY = null;
+          let lineParts = [];
+          const pageLines = [];
+          for (const item of content.items) {
+            const y = item.transform ? Math.round(item.transform[5]) : 0;
+            if (lastY !== null && Math.abs(y - lastY) > 4) {
+              pageLines.push(lineParts.join(" ").trim());
+              lineParts = [];
+            }
+            if (item.str) lineParts.push(item.str);
+            lastY = y;
+          }
+          if (lineParts.length > 0) pageLines.push(lineParts.join(" ").trim());
+          pageTexts.push(pageLines.filter(Boolean).join("\n"));
+        }
+        const joined = pageTexts.join("\n\n").trim();
+        if (joined) return joined;
+      } catch (e) {
+        console.warn("PDF.js fallback:", e);
+      }
+    }
+    const fallbackPdf = await extractPdfFallback(arrayBuffer);
+    if (fallbackPdf) return fallbackPdf;
+    throw new Error("Could not extract PDF text");
+  }
+
+  // 3. Legacy Word (.doc) or Rich Text (.rtf)
+  if (name.endsWith(".doc") || name.endsWith(".rtf") || file.type === "application/msword") {
+    const rawText = await file.text();
+    // If HTML-formatted Word doc (like our ATS Word export or Google Docs .doc)
+    if (/<html|<body|<p|<div/i.test(rawText)) {
+      const doc = new DOMParser().parseFromString(rawText, "text/html");
+      return (doc.body ? doc.body.innerText : rawText).trim();
+    }
+    // If RTF format ({\rtf1...)
+    if (rawText.startsWith("{\\rtf")) {
+      return rawText
+        .replace(/\\par\b/g, "\n")
+        .replace(/\\tab\b/g, " ")
+        .replace(/\\'[0-9a-fA-F]{2}/g, "")
+        .replace(/\\[a-zA-Z]+-?\d*\s?/g, "")
+        .replace(/[{}]/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+    // Extract printable text runs from legacy binary .doc
+    const matches = rawText.match(/[A-Za-z0-9.,;:'"!?()\-/$%&\s]{12,}/g) || [];
+    const cleaned = matches.join("\n").replace(/\s{3,}/g, "\n").trim();
+    if (cleaned) return cleaned;
+  }
+
+  // 4. Plain Text (.txt, .md, etc.)
+  return (await file.text()).trim();
+}
 
 function parseRawResumeTextIntoState(rawText, opts = {}) {
   const lines = rawText
