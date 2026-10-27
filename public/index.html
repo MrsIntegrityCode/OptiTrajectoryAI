@@ -66,18 +66,10 @@
           <label for="regPassword">Password (min 6 chars)</label>
           <input type="password" id="regPassword" class="input-field" placeholder="At least 6 characters" minlength="6" required />
         </div>
-        <div class="form-group">
-          <label for="regStarterTemplate">Starter Career Template</label>
-          <select id="regStarterTemplate" class="input-select">
-            <option value="pm">Product & AI Leadership Template</option>
-            <option value="eng">Full-Stack & Systems Engineering Template</option>
-            <option value="mkt">Growth & Product Marketing Template</option>
-          </select>
-        </div>
         <div class="privacy-notice-box">
-          🔒 <strong>Private by Default:</strong> Your Career Compass, Resume, and Infographic are 100% private to your account unless you explicitly turn on Public Sharing inside the app.
+          🔒 <strong>Private by Default:</strong> After signing up, our guided assistant will walk you step-by-step through your career goals and resume. Your profile stays 100% private unless you choose to share it.
         </div>
-        <button type="submit" class="btn btn-primary auth-submit-btn">Create Private Account →</button>
+        <button type="submit" class="btn btn-primary auth-submit-btn">Start Guided Career Setup →</button>
       </form>
 
       <div class="auth-demo-divider">
@@ -159,19 +151,27 @@
 
       <!-- Primary Navigation Tabs -->
       <nav class="side-nav" aria-label="Primary Navigation">
-        <button class="nav-btn active" data-tab="compass">
+        <button class="nav-btn active" data-tab="journey">
+          <span class="nav-icon">✨</span>
+          <span class="nav-text">
+            <strong>Guided Career Coach</strong>
+            <small>Step-by-Step Walkthrough</small>
+          </span>
+        </button>
+
+        <button class="nav-btn" data-tab="compass">
           <span class="nav-icon">🧭</span>
           <span class="nav-text">
-            <strong>Career Compass</strong>
-            <small>Goals, Salary & Skills Gap</small>
+            <strong>1. Career Goals</strong>
+            <small>Ideal Roles & Trajectory</small>
           </span>
         </button>
 
         <button class="nav-btn" data-tab="resume">
           <span class="nav-icon">📄</span>
           <span class="nav-text">
-            <strong>Resume Studio</strong>
-            <small>Evaluation & Bullet Optimizer</small>
+            <strong>2. Resume Optimizer</strong>
+            <small>Score & 1-Click Fixes</small>
           </span>
           <span class="nav-badge" id="navResumeBadge">84</span>
         </button>
@@ -179,48 +179,43 @@
         <button class="nav-btn" data-tab="ats">
           <span class="nav-icon">📑</span>
           <span class="nav-text">
-            <strong>ATS Resume & Cover Letter</strong>
-            <small>Formatted Docs, PDF & Word Export</small>
+            <strong>3. ATS Resume & Cover Letter</strong>
+            <small>Ready-to-Send PDF & Word</small>
           </span>
         </button>
 
         <button class="nav-btn" data-tab="infographic">
           <span class="nav-icon">🎨</span>
           <span class="nav-text">
-            <strong>Candidate Infographic</strong>
-            <small>Visual 1-Pager & Public Opt-In</small>
+            <strong>4. My Infographic</strong>
+            <small>1-Page Visual Bio</small>
           </span>
         </button>
 
         <button class="nav-btn" data-tab="jobs">
           <span class="nav-icon">🔍</span>
           <span class="nav-text">
-            <strong>Find Real Jobs & Match</strong>
-            <small>Live API + URL/JD Analyzer</small>
+            <strong>5. Find Real Jobs</strong>
+            <small>Live Matches & URL Check</small>
           </span>
         </button>
 
         <button class="nav-btn" data-tab="tracker">
           <span class="nav-icon">📋</span>
           <span class="nav-text">
-            <strong>Application CRM</strong>
-            <small>Pipeline & 1-Click Pitch</small>
+            <strong>6. Saved Applications</strong>
+            <small>Track & Tailor Pitches</small>
           </span>
           <span class="nav-badge" id="navTrackerBadge">3</span>
         </button>
       </nav>
 
-      <!-- Bottom Account & Persona Actions -->
+      <!-- Bottom Account Actions -->
       <div class="sidebar-footer">
-        <label class="preset-label" for="personaSelect">Load Role Template</label>
-        <select id="personaSelect" class="input-select input-sm">
-          <option value="pm">Product & AI Lead Template</option>
-          <option value="eng">Full-Stack Eng Template</option>
-          <option value="mkt">Growth Marketing Template</option>
-        </select>
+        <button id="restartWizardBtn" class="btn btn-secondary btn-sm" style="width:100%;">✨ Re-Open Guided Setup</button>
         <div class="footer-btn-row">
-          <button id="exportDataBtn" class="btn btn-ghost btn-sm" title="Download backup JSON">Export JSON</button>
-          <button id="logoutBtn" class="btn btn-secondary btn-sm" title="Sign out of account">Log Out</button>
+          <button id="exportDataBtn" class="btn btn-ghost btn-sm" title="Download backup JSON">Backup</button>
+          <button id="logoutBtn" class="btn btn-ghost btn-sm" title="Sign out of account">Log Out</button>
         </div>
       </div>
     </aside>
@@ -251,116 +246,265 @@
       </header>
 
       <!-- ============================================================== -->
-      <!-- TAB 1: CAREER COMPASS                                          -->
+      <!-- TAB 0: GUIDED CAREER COACH WALKTHROUGH (Default Landing)       -->
       <!-- ============================================================== -->
-      <section class="tab-panel active" id="tab-compass">
-        <div class="grid-2col">
-          <!-- Left: Candidate Identity & North Star Goals -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>1. Candidate Identity & Career North Star</h3>
-                <p>Your core profile and what you want next in your career.</p>
-              </div>
-              <span class="tag tag-accent">Saved to Your Account</span>
+      <section class="tab-panel active" id="tab-journey">
+        <div class="wizard-container">
+          <!-- Step Progress Bar -->
+          <div class="wizard-stepper">
+            <button class="wiz-step active" data-wstep="1" id="wizStepBtn1">
+              <span class="wiz-num">1</span>
+              <span>Career Goals & Ideal Roles</span>
+            </button>
+            <div class="wiz-connector"></div>
+            <button class="wiz-step" data-wstep="2" id="wizStepBtn2">
+              <span class="wiz-num">2</span>
+              <span>Provide Your Resume</span>
+            </button>
+            <div class="wiz-connector"></div>
+            <button class="wiz-step" data-wstep="3" id="wizStepBtn3">
+              <span class="wiz-num">3</span>
+              <span>Your Action Plan & Results</span>
+            </button>
+          </div>
+
+          <!-- STEP 1: CAREER GOALS & IDEAL POSITIONS -->
+          <div class="card wizard-card" id="wizPane1">
+            <div class="wizard-hero">
+              <span class="tag tag-accent">Step 1 of 3 • Takes 30 Seconds</span>
+              <h3>👋 Welcome! What are your career goals and ideal positions?</h3>
+              <p>Tell us what you're aiming for in plain English. We'll automatically configure your skills radar, trajectory, and job matching in the background.</p>
             </div>
 
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="inpName">Full Name</label>
-                <input type="text" id="inpName" class="input-field" placeholder="e.g. Alex Jordan" />
-              </div>
-              <div class="form-group">
-                <label for="inpHeadline">Current / Target Headline</label>
-                <input type="text" id="inpHeadline" class="input-field" placeholder="e.g. Staff Product Manager — AI & SaaS" />
-              </div>
-              <div class="form-group">
-                <label for="inpLocation">Location & Timezone</label>
-                <input type="text" id="inpLocation" class="input-field" placeholder="e.g. Austin, TX (Open to Remote)" />
-              </div>
-              <div class="form-group">
-                <label for="inpYearsExp">Years of Experience</label>
-                <input type="number" id="inpYearsExp" class="input-field" min="0" max="50" />
-              </div>
+            <div class="form-grid mt-20">
               <div class="form-group full-width">
-                <label for="inpMission">Personal Career North Star Statement (1–2 sentences)</label>
-                <textarea id="inpMission" class="input-field" rows="2" placeholder="What impact do you want to make in your next role?"></textarea>
+                <label for="wizTargetRoles">What are your ideal job titles? (e.g. Product Manager, Registered Nurse, Marketing Director, Software Engineer)</label>
+                <input type="text" id="wizTargetRoles" class="input-field input-lg" placeholder="Type 1 to 3 ideal job titles..." />
               </div>
-              <div class="form-group">
-                <label for="inpTargetRoles">Target Job Titles (comma-separated)</label>
-                <input type="text" id="inpTargetRoles" class="input-field" placeholder="Staff Product Manager, Principal PM, Head of Product" />
+
+              <div class="form-group full-width">
+                <label for="wizCareerGoal">In 1–2 sentences, what is your #1 career goal right now?</label>
+                <textarea id="wizCareerGoal" class="input-field" rows="2" placeholder="e.g. Transition into a senior remote leadership role where I can lead AI product strategy and earn $180k+."></textarea>
               </div>
+
               <div class="form-group">
-                <label for="inpIndustries">Target Industries (comma-separated)</label>
-                <input type="text" id="inpIndustries" class="input-field" placeholder="AI/ML, B2B SaaS, FinTech, Developer Tools" />
-              </div>
-              <div class="form-group">
-                <label for="inpMinSalary">Target Base Salary ($ USD)</label>
-                <input type="number" id="inpMinSalary" class="input-field" step="5000" />
-              </div>
-              <div class="form-group">
-                <label for="inpWorkStyle">Preferred Work Arrangement</label>
-                <select id="inpWorkStyle" class="input-select">
-                  <option value="Remote">Remote First</option>
-                  <option value="Hybrid">Hybrid (2-3 days/wk)</option>
+                <label for="wizWorkStyle">Where do you want to work?</label>
+                <select id="wizWorkStyle" class="input-select">
                   <option value="Remote / Hybrid">Remote or Hybrid</option>
-                  <option value="On-site">On-site</option>
+                  <option value="Remote">100% Remote Only</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="On-site">On-site / In-Person</option>
                 </select>
+              </div>
+
+              <div class="form-group">
+                <label for="wizMinSalary">Ideal Minimum Base Salary ($ USD)</label>
+                <input type="number" id="wizMinSalary" class="input-field" step="5000" placeholder="150000" />
+              </div>
+
+              <div class="form-group">
+                <label for="wizLocation">Your City / State</label>
+                <input type="text" id="wizLocation" class="input-field" placeholder="e.g. Austin, TX" />
+              </div>
+
+              <div class="form-group">
+                <label for="wizIndustries">Preferred Industries (Optional)</label>
+                <input type="text" id="wizIndustries" class="input-field" placeholder="e.g. Tech, Healthcare, Finance, SaaS" />
+              </div>
+            </div>
+
+            <div class="wizard-footer-bar">
+              <span>All detailed settings are handled automatically behind the scenes.</span>
+              <button class="btn btn-primary btn-lg" id="wizToStep2Btn">Next: Provide Your Resume →</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: PROVIDE YOUR RESUME -->
+          <div class="card wizard-card hidden" id="wizPane2">
+            <div class="wizard-hero">
+              <span class="tag tag-accent">Step 2 of 3 • Automatic Parsing & Evaluation</span>
+              <h3>📄 Now, provide your current resume</h3>
+              <p>Paste your resume text below or upload a file. We'll extract your experience, score your bullets, build your ATS Resume & Cover Letter, and create your 1-page Infographic automatically.</p>
+            </div>
+
+            <div class="upload-dropzone mt-16">
+              <div>
+                <strong>📂 Have a resume file (`.txt` or `.md`)?</strong>
+                <p style="font-size:0.8rem; color:var(--text-secondary);">Or simply copy & paste the text from your Word/PDF resume into the box below.</p>
+              </div>
+              <label class="btn btn-secondary btn-sm file-upload-label">
+                Choose File to Upload
+                <input type="file" id="wizResumeFileInput" accept=".txt,.md" hidden />
+              </label>
+            </div>
+
+            <div class="form-group mt-16">
+              <label for="wizResumeText">Paste Your Full Resume Text Here</label>
+              <textarea id="wizResumeText" class="input-field" rows="9" placeholder="Paste your summary, work experience, bullet points, skills, and education here..."></textarea>
+            </div>
+
+            <div class="wizard-footer-bar">
+              <button class="btn btn-ghost" id="wizBackTo1Btn">← Back to Goals</button>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn btn-secondary btn-sm" id="wizFillSampleResumeBtn">Don't have it handy? Fill Sample Resume</button>
+                <button class="btn btn-primary btn-lg" id="wizAnalyzeAndFinishBtn">✨ Analyze & Build My Career Kit →</button>
               </div>
             </div>
           </div>
 
-          <!-- Right: Career Values & Trajectory Roadmap -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>2. Dealbreakers, Priorities & 3-Horizon Roadmap</h3>
-                <p>Clarify what matters most so you evaluate offers objectively.</p>
+          <!-- STEP 3: YOUR PERSONALIZED WALKTHROUGH & RESULTS HUB -->
+          <div class="card wizard-card hidden" id="wizPane3">
+            <div class="wizard-hero">
+              <span class="tag tag-success">✓ Career Kit Ready!</span>
+              <h3 id="wizResultHeadline">🎉 Your Personalized Career Trajectory Kit is Ready!</h3>
+              <p>Based on your goals and resume, we've evaluated your profile and generated everything you need. Follow the guided steps below:</p>
+            </div>
+
+            <div class="guided-results-grid mt-20">
+              <!-- Result Card 1: Resume Evaluation & Quick Fixes -->
+              <div class="guided-result-card">
+                <div class="gr-step-badge">Step A • Resume Evaluation</div>
+                <h4>📄 Your Resume Score: <span id="wizSummaryScore" style="color:#34d399;">88/100</span></h4>
+                <p id="wizSummaryDiagText">We analyzed your bullet points for quantified impact and action verbs, and prepared 1-click Google XYZ rewrites.</p>
+                <button class="btn btn-primary btn-sm mt-12" data-goto="resume">Review & Upgrade Bullets →</button>
+              </div>
+
+              <!-- Result Card 2: ATS Formatted Resume & Cover Letter -->
+              <div class="guided-result-card">
+                <div class="gr-step-badge">Step B • Application-Ready Docs</div>
+                <h4>📑 ATS Resume & Cover Letter</h4>
+                <p>Your clean, single-column ATS-compliant Resume and Cover Letter are formatted and ready to download as PDF or Word (`.doc`).</p>
+                <button class="btn btn-primary btn-sm mt-12" data-goto="ats">View & Download ATS Docs →</button>
+              </div>
+
+              <!-- Result Card 3: 1-Page Candidate Infographic -->
+              <div class="guided-result-card">
+                <div class="gr-step-badge">Step C • Personal Brand</div>
+                <h4>🎨 Your 1-Page Visual Infographic</h4>
+                <p>We turned your career highlights, KPIs, and top skills into a striking executive 1-pager (private by default, or opt-in to share).</p>
+                <button class="btn btn-primary btn-sm mt-12" data-goto="infographic">Open My Infographic →</button>
+              </div>
+
+              <!-- Result Card 4: Live Job Discovery & Matching -->
+              <div class="guided-result-card">
+                <div class="gr-step-badge">Step D • Real Job Matches</div>
+                <h4>🔍 Find Matching Real Jobs</h4>
+                <p id="wizSummaryJobsText">We pre-filtered live remote job feeds and major job boards for your ideal roles and calculated your match scores.</p>
+                <button class="btn btn-primary btn-sm mt-12" data-goto="jobs">Explore Matching Jobs →</button>
               </div>
             </div>
 
-            <div class="priority-sliders" id="prioritySliders"></div>
-
-            <hr class="divider" />
-
-            <h4 class="section-subhead">3-Horizon Career Trajectory</h4>
-            <div class="horizon-list">
-              <div class="horizon-item">
-                <span class="horizon-badge h1">Next 6–12 Mos</span>
-                <input type="text" id="inpHorizon1" class="input-field" placeholder="Immediate next role & 90-day win" />
-              </div>
-              <div class="horizon-item">
-                <span class="horizon-badge h2">Year 2–3</span>
-                <input type="text" id="inpHorizon2" class="input-field" placeholder="Scope expansion / team leadership milestone" />
-              </div>
-              <div class="horizon-item">
-                <span class="horizon-badge h3">Year 5+ Vision</span>
-                <input type="text" id="inpHorizon3" class="input-field" placeholder="Long-term executive or founder goal" />
-              </div>
+            <div class="wizard-footer-bar mt-20">
+              <button class="btn btn-secondary btn-sm" id="wizEditInputsBtn">✏️ Update My Goals or Resume Input</button>
+              <span style="font-size:0.8rem; color:var(--text-secondary);">Tip: You can return to this Guided Walkthrough anytime from the top of the left sidebar.</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- Bottom Row: Skills Gap & Market Demand Matrix -->
-        <div class="card mt-20">
+      <!-- ============================================================== -->
+      <!-- TAB 1: CAREER COMPASS (Simple Core + Advanced in Background)   -->
+      <!-- ============================================================== -->
+      <section class="tab-panel" id="tab-compass">
+        <div class="card">
           <div class="card-header">
             <div>
-              <h3>3. Skills Inventory & Target Role Gap Analysis</h3>
-              <p>Compare your current skill proficiency against market requirements for your target roles. Add or adjust skills below.</p>
+              <h3>🧭 Your Career Goals & Ideal Positions</h3>
+              <p>Keep these simple—changes here automatically update your ATS Resume, Cover Letter, Infographic, and Job Matches.</p>
             </div>
-            <div class="inline-form">
-              <input type="text" id="newSkillName" class="input-field input-sm" placeholder="Add skill (e.g. System Design)" />
-              <select id="newSkillLevel" class="input-select input-sm">
-                <option value="95">Expert (95%)</option>
-                <option value="80" selected>Advanced (80%)</option>
-                <option value="60">Intermediate (60%)</option>
-                <option value="40">Learning / Gap (40%)</option>
+            <button class="btn btn-primary btn-sm" onclick="switchTab('resume')">Next Step: Resume Optimizer →</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="inpName">Full Name</label>
+              <input type="text" id="inpName" class="input-field" placeholder="e.g. Alex Jordan" />
+            </div>
+            <div class="form-group">
+              <label for="inpHeadline">Professional Headline</label>
+              <input type="text" id="inpHeadline" class="input-field" placeholder="e.g. Senior Product Manager" />
+            </div>
+            <div class="form-group full-width">
+              <label for="inpTargetRoles">Ideal Positions / Target Job Titles (comma-separated)</label>
+              <input type="text" id="inpTargetRoles" class="input-field" placeholder="e.g. Staff Product Manager, Principal PM, Director of Product" />
+            </div>
+            <div class="form-group full-width">
+              <label for="inpMission">Your Career Goal / North Star Statement</label>
+              <textarea id="inpMission" class="input-field" rows="2" placeholder="What are you looking for in your next role?"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="inpWorkStyle">Preferred Work Arrangement</label>
+              <select id="inpWorkStyle" class="input-select">
+                <option value="Remote">Remote First</option>
+                <option value="Hybrid">Hybrid (2-3 days/wk)</option>
+                <option value="Remote / Hybrid">Remote or Hybrid</option>
+                <option value="On-site">On-site</option>
               </select>
-              <button class="btn btn-secondary btn-sm" id="addSkillBtn">+ Add Skill</button>
+            </div>
+            <div class="form-group">
+              <label for="inpMinSalary">Target Base Salary ($ USD)</label>
+              <input type="number" id="inpMinSalary" class="input-field" step="5000" />
+            </div>
+            <div class="form-group">
+              <label for="inpLocation">Location</label>
+              <input type="text" id="inpLocation" class="input-field" placeholder="e.g. Austin, TX" />
+            </div>
+            <div class="form-group">
+              <label for="inpIndustries">Preferred Industries</label>
+              <input type="text" id="inpIndustries" class="input-field" placeholder="e.g. AI/ML, B2B SaaS, Healthcare" />
             </div>
           </div>
 
-          <div class="skills-matrix-grid" id="skillsMatrixContainer"></div>
+          <!-- Detailed Calibration tucked neatly into background drawer -->
+          <details class="raw-paste-drawer mt-20">
+            <summary>⚙️ Advanced Calibration (Auto-configured in background: Years Exp, 3-Year Roadmap, Priorities & Skills)</summary>
+            <div class="grid-2col mt-16">
+              <div>
+                <div class="form-group mb-20">
+                  <label for="inpYearsExp">Years of Experience</label>
+                  <input type="number" id="inpYearsExp" class="input-field" min="0" max="50" />
+                </div>
+                <h4 class="section-subhead">3-Horizon Career Trajectory</h4>
+                <div class="horizon-list">
+                  <div class="horizon-item">
+                    <span class="horizon-badge h1">Next 6–12 Mos</span>
+                    <input type="text" id="inpHorizon1" class="input-field" />
+                  </div>
+                  <div class="horizon-item">
+                    <span class="horizon-badge h2">Year 2–3</span>
+                    <input type="text" id="inpHorizon2" class="input-field" />
+                  </div>
+                  <div class="horizon-item">
+                    <span class="horizon-badge h3">Year 5+ Vision</span>
+                    <input type="text" id="inpHorizon3" class="input-field" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h4 class="section-subhead">Offer Priorities</h4>
+                <div class="priority-sliders" id="prioritySliders"></div>
+              </div>
+            </div>
+
+            <div class="mt-20">
+              <div class="card-header">
+                <div>
+                  <h4>Detected Skills & Market Fit</h4>
+                  <p>Extracted automatically from your resume and target roles.</p>
+                </div>
+                <div class="inline-form">
+                  <input type="text" id="newSkillName" class="input-field input-sm" placeholder="Add skill..." />
+                  <select id="newSkillLevel" class="input-select input-sm">
+                    <option value="95">Expert (95%)</option>
+                    <option value="80" selected>Advanced (80%)</option>
+                    <option value="60">Intermediate (60%)</option>
+                  </select>
+                  <button class="btn btn-secondary btn-sm" id="addSkillBtn">+ Add Skill</button>
+                </div>
+              </div>
+              <div class="skills-matrix-grid" id="skillsMatrixContainer"></div>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -371,48 +515,12 @@
         <div class="scorecard-grid" id="resumeScorecard"></div>
 
         <div class="grid-2col mt-20">
-          <!-- Left: Master Resume Editor + Raw Upload/Paste -->
+          <!-- Left: Simple Diagnostic Findings & 1-Click Bullet Optimizer -->
           <div class="card">
             <div class="card-header">
               <div>
-                <h3>Master Resume Content & Parser</h3>
-                <p>Edit your structured experience or upload/paste a plain-text resume to evaluate immediately.</p>
-              </div>
-              <div class="header-btn-group">
-                <label class="btn btn-secondary btn-sm file-upload-label">
-                  📂 Upload .txt/.md
-                  <input type="file" id="resumeFileUpload" accept=".txt,.md,.json" hidden />
-                </label>
-                <button class="btn btn-primary btn-sm" id="runAuditBtn">⚡ Re-Run Full Audit</button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="inpSummary">Executive Summary</label>
-              <textarea id="inpSummary" class="input-field" rows="3"></textarea>
-            </div>
-
-            <div class="experience-editor-header">
-              <h4>Experience & Quantified Achievements</h4>
-              <button class="btn btn-ghost btn-sm" id="addRoleBtn">+ Add Role</button>
-            </div>
-            <div id="experienceListEditor" class="experience-editor-list"></div>
-
-            <details class="raw-paste-drawer mt-16">
-              <summary>📋 Have raw resume text? Paste & Parse into Resume Studio</summary>
-              <div class="drawer-body">
-                <textarea id="rawResumePaste" class="input-field" rows="6" placeholder="Paste your full resume text here and click 'Import & Evaluate'..."></textarea>
-                <button class="btn btn-secondary btn-sm mt-8" id="importRawResumeBtn">Import & Evaluate Text</button>
-              </div>
-            </details>
-          </div>
-
-          <!-- Right: Diagnostic Findings & Interactive XYZ Bullet Optimizer -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Diagnostic Report & Bullet Optimizer</h3>
-                <p>Actionable fixes to boost ATS pass rates, quantification, and impact.</p>
+                <h3>1. Resume Evaluation & 1-Click Bullet Upgrades</h3>
+                <p>Click any flagged bullet below to upgrade it with quantified impact, then click "Replace in Resume".</p>
               </div>
               <span class="tag tag-success" id="auditStatusTag">Live Evaluation</span>
             </div>
@@ -423,22 +531,61 @@
 
             <div class="optimizer-box">
               <div class="optimizer-header">
-                <h4>✨ Interactive Bullet Point Optimizer (Google XYZ Formula)</h4>
-                <p>Accomplished <strong>[X]</strong> as measured by <strong>[Y]</strong>, by doing <strong>[Z]</strong>. Click any weak or unquantified bullet below—or type your own—to upgrade it.</p>
-              </div>
-
-              <div class="form-group mt-12">
-                <label for="bulletInput">Bullet to Optimize</label>
-                <textarea id="bulletInput" class="input-field" rows="2" placeholder="e.g. Responsible for managing product roadmap and working with engineering to launch new onboarding flow."></textarea>
-              </div>
-              <div class="optimizer-actions">
-                <button class="btn btn-primary btn-sm" id="generateBulletBtn">✨ Generate 3 High-Impact Rewrites</button>
-                <span class="optimizer-hint">Or click a flagged bullet from your resume below:</span>
+                <h4>✨ 1-Click Bullet Point Optimizer</h4>
+                <p>Click any flagged bullet from your resume below (or type a bullet) to generate 3 stronger versions:</p>
               </div>
 
               <div id="flaggedBulletsList" class="flagged-bullets-list"></div>
+
+              <div class="form-group mt-12">
+                <label for="bulletInput">Selected Bullet to Upgrade</label>
+                <textarea id="bulletInput" class="input-field" rows="2" placeholder="Click a yellow flagged bullet above or type a bullet here..."></textarea>
+              </div>
+              <div class="optimizer-actions">
+                <button class="btn btn-primary btn-sm" id="generateBulletBtn">✨ Generate 3 High-Impact Rewrites</button>
+              </div>
+
               <div id="bulletSuggestionsOutput" class="bullet-suggestions"></div>
             </div>
+          </div>
+
+          <!-- Right: Master Resume Content & Quick Re-Import -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>2. Your Parsed Resume Content</h3>
+                <p>Updates automatically when you accept a rewrite on the left. Ready for ATS export!</p>
+              </div>
+              <div class="header-btn-group">
+                <button class="btn btn-primary btn-sm" onclick="switchTab('ats')">Next: Get ATS Resume & Cover Letter →</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inpSummary">Executive Summary</label>
+              <textarea id="inpSummary" class="input-field" rows="3"></textarea>
+            </div>
+
+            <div class="experience-editor-header">
+              <h4>Work Experience & Achievements</h4>
+              <button class="btn btn-ghost btn-sm" id="addRoleBtn">+ Add Role</button>
+            </div>
+            <div id="experienceListEditor" class="experience-editor-list"></div>
+
+            <details class="raw-paste-drawer mt-16">
+              <summary>📋 Want to upload or paste a different resume? Click here</summary>
+              <div class="drawer-body">
+                <div style="margin-bottom:8px;">
+                  <label class="btn btn-secondary btn-sm file-upload-label">
+                    📂 Upload .txt/.md File
+                    <input type="file" id="resumeFileUpload" accept=".txt,.md,.json" hidden />
+                  </label>
+                  <button class="btn btn-ghost btn-sm" id="runAuditBtn">⚡ Re-Run Audit</button>
+                </div>
+                <textarea id="rawResumePaste" class="input-field" rows="5" placeholder="Or paste your full resume text here..."></textarea>
+                <button class="btn btn-secondary btn-sm mt-8" id="importRawResumeBtn">Import & Evaluate Text</button>
+              </div>
+            </details>
           </div>
         </div>
       </section>
@@ -479,25 +626,28 @@
             </div>
           </div>
 
-          <!-- Contact & Education Metadata Row for ATS Header -->
-          <div class="form-grid mt-16" style="grid-template-columns: repeat(4, 1fr); padding-top:14px; border-top:1px solid var(--border-subtle);">
-            <div class="form-group">
-              <label for="atsEmailInput">Contact Email</label>
-              <input type="text" id="atsEmailInput" class="input-field input-sm" placeholder="alex.jordan@email.com" />
+          <!-- Contact & Education Metadata Row Tucked into Optional Drawer -->
+          <details class="raw-paste-drawer mt-12">
+            <summary>⚙️ Edit Contact Header & Education Details (Auto-filled in background)</summary>
+            <div class="form-grid mt-12" style="grid-template-columns: repeat(4, 1fr);">
+              <div class="form-group">
+                <label for="atsEmailInput">Contact Email</label>
+                <input type="text" id="atsEmailInput" class="input-field input-sm" placeholder="alex.jordan@email.com" />
+              </div>
+              <div class="form-group">
+                <label for="atsPhoneInput">Phone Number</label>
+                <input type="text" id="atsPhoneInput" class="input-field input-sm" placeholder="(512) 555-0194" />
+              </div>
+              <div class="form-group">
+                <label for="atsLinkedinInput">LinkedIn / Portfolio URL</label>
+                <input type="text" id="atsLinkedinInput" class="input-field input-sm" placeholder="linkedin.com/in/alex-jordan" />
+              </div>
+              <div class="form-group">
+                <label for="atsEducationInput">Education & Certifications</label>
+                <input type="text" id="atsEducationInput" class="input-field input-sm" placeholder="B.S. Computer Science & MBA | PMP, Pragmatic Certified" />
+              </div>
             </div>
-            <div class="form-group">
-              <label for="atsPhoneInput">Phone Number</label>
-              <input type="text" id="atsPhoneInput" class="input-field input-sm" placeholder="(512) 555-0194" />
-            </div>
-            <div class="form-group">
-              <label for="atsLinkedinInput">LinkedIn / Portfolio URL</label>
-              <input type="text" id="atsLinkedinInput" class="input-field input-sm" placeholder="linkedin.com/in/alex-jordan" />
-            </div>
-            <div class="form-group">
-              <label for="atsEducationInput">Education & Certifications</label>
-              <input type="text" id="atsEducationInput" class="input-field input-sm" placeholder="B.S. Computer Science & MBA | PMP, Pragmatic Certified" />
-            </div>
-          </div>
+          </details>
         </div>
 
         <!-- ATS Compliance Verification Strip -->

@@ -497,29 +497,33 @@ function syncPrivacyUI() {
 // NAVIGATION & GLOBAL HEADER SYNC
 // ============================================================================
 const TAB_META = {
+  journey: {
+    title: "✨ Guided Career Coach Walkthrough",
+    desc: "Step-by-step assistant: tell us your career goals and paste your resume—we handle all the complex calibration in the background."
+  },
   compass: {
-    title: "🧭 Career Compass & North Star",
-    desc: "Define your target roles, compensation floor, and skill priorities—every module adapts automatically."
+    title: "🧭 1. Career Goals & Ideal Positions",
+    desc: "Your core target roles and goals. Detailed trajectory and skill calibrations are managed automatically in the background."
   },
   resume: {
-    title: "📄 Resume Evaluation & Optimization Studio",
-    desc: "Multi-dimensional ATS & impact scoring, gap detection against your Career Compass, and 1-click XYZ bullet rewrites."
+    title: "📄 2. Resume Evaluation & 1-Click Optimizer",
+    desc: "Instant scoring and 1-click Google XYZ bullet upgrades."
   },
   ats: {
-    title: "📑 ATS-Formatted Resume & Cover Letter Builder",
-    desc: "Machine-parseable single-column Resume & Cover Letter engineered for Workday, Greenhouse, and Lever—export to PDF, Word (.doc), or Plain Text."
+    title: "📑 3. ATS-Formatted Resume & Cover Letter",
+    desc: "Clean, single-column machine-parseable Resume & Cover Letter ready to download as PDF, Word (.doc), or Plain Text."
   },
   infographic: {
-    title: "🎨 Candidate Infographic Studio (1-Page Visual Bio)",
-    desc: "Auto-generated executive visual portfolio ready to print to PDF or attach to hiring manager outreach."
+    title: "🎨 4. Candidate Infographic (1-Page Visual Bio)",
+    desc: "Auto-generated executive visual portfolio ready to print to PDF or share via opt-in link."
   },
   jobs: {
-    title: "🔍 Real Job Discovery & Deep URL/JD Match Analyzer",
-    desc: "Search live remote openings or paste any job URL/description to calculate your exact keyword and goal fit."
+    title: "🔍 5. Find Real Jobs & Match Analyzer",
+    desc: "Live job postings pre-filtered for your ideal positions + instant URL/JD match breakdown."
   },
   tracker: {
-    title: "📋 Application CRM & 1-Click Tailoring Studio",
-    desc: "Track opportunities across stages and generate tailored cover letters, outreach notes, and resume tweaks."
+    title: "📋 6. Saved Applications & Tailored Pitches",
+    desc: "Track opportunities and generate tailored cover letters and outreach notes."
   }
 };
 
@@ -535,6 +539,8 @@ function switchTab(tabId) {
     document.getElementById("activeTabTitle").textContent = meta.title;
     document.getElementById("activeTabDesc").textContent = meta.desc;
   }
+  if (tabId === "journey") renderGuidedWizard();
+  if (tabId === "compass") renderCompassModule();
   if (tabId === "resume") renderResumeStudio();
   if (tabId === "ats") renderAtsBuilder();
   if (tabId === "infographic") renderInfographic();
@@ -570,6 +576,113 @@ function syncGlobalUI() {
   setTxt("globalReadinessScore", readiness + "%");
   const bar = document.getElementById("globalReadinessBar");
   if (bar) bar.style.width = readiness + "%";
+}
+
+// ============================================================================
+// MODULE 0: GUIDED CAREER COACH WALKTHROUGH WIZARD
+// ============================================================================
+function setWizardStep(stepNum) {
+  [1, 2, 3].forEach((n) => {
+    const btn = document.getElementById(`wizStepBtn${n}`);
+    const pane = document.getElementById(`wizPane${n}`);
+    if (btn) btn.classList.toggle("active", n === stepNum);
+    if (pane) pane.classList.toggle("hidden", n !== stepNum);
+  });
+  if (stepNum === 3) {
+    const audit = evaluateResumeState();
+    const scoreEl = document.getElementById("wizSummaryScore");
+    if (scoreEl) scoreEl.textContent = `${audit.overall}/100`;
+    const diagEl = document.getElementById("wizSummaryDiagText");
+    if (diagEl) {
+      diagEl.textContent =
+        audit.flaggedBullets.length > 0
+          ? `We scored your resume (${audit.overall}/100) and found ${audit.flaggedBullets.length} bullet point(s) you can upgrade with 1 click.`
+          : `Your resume scored ${audit.overall}/100 with strong quantified achievements!`;
+    }
+    const primaryRole = ((state.targetRoles || state.headline || "your target roles").split(",")[0] || "").trim();
+    const jobsEl = document.getElementById("wizSummaryJobsText");
+    if (jobsEl) {
+      jobsEl.textContent = `We pre-filtered live remote job feeds and major job boards for "${primaryRole}" and calculated your match scores.`;
+    }
+  }
+}
+
+function renderGuidedWizard() {
+  const rolesEl = document.getElementById("wizTargetRoles");
+  const goalEl = document.getElementById("wizCareerGoal");
+  const styleEl = document.getElementById("wizWorkStyle");
+  const salEl = document.getElementById("wizMinSalary");
+  const locEl = document.getElementById("wizLocation");
+  const indEl = document.getElementById("wizIndustries");
+  const resTextEl = document.getElementById("wizResumeText");
+
+  if (rolesEl) rolesEl.value = state.targetRoles || "";
+  if (goalEl) goalEl.value = state.mission || "";
+  if (styleEl) styleEl.value = state.workStyle || "Remote / Hybrid";
+  if (salEl) salEl.value = state.minSalary || 150000;
+  if (locEl) locEl.value = state.location || "";
+  if (indEl) indEl.value = state.industries || "";
+
+  if (resTextEl && !resTextEl.value) {
+    // Pre-populate with existing resume if user already has one
+    const existingResumeText = [
+      state.summary || "",
+      ...(state.experience || []).map(
+        (e) => `${e.role} | ${e.company} (${e.period})\n` + (e.bullets || []).map((b) => `• ${b}`).join("\n")
+      )
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    resTextEl.value = existingResumeText;
+  }
+
+  // If user already completed onboarding, show Step 3 summary by default (they can click Step 1 or 2 anytime)
+  if (state.onboardingCompleted) {
+    setWizardStep(3);
+  } else {
+    setWizardStep(1);
+  }
+}
+
+function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
+  const roles = (document.getElementById("wizTargetRoles").value || "").trim() || "Senior Professional";
+  const goal = (document.getElementById("wizCareerGoal").value || "").trim();
+  const workStyle = document.getElementById("wizWorkStyle").value || "Remote / Hybrid";
+  const minSalary = Number(document.getElementById("wizMinSalary").value) || 150000;
+  const location = (document.getElementById("wizLocation").value || "").trim() || "United States (Remote)";
+  const industries = (document.getElementById("wizIndustries").value || "").trim() || "Technology, SaaS, Enterprise";
+
+  const primaryRole = (roles.split(",")[0] || "Target Role").trim();
+  state.targetRoles = roles;
+  state.headline = primaryRole;
+  state.mission =
+    goal ||
+    `Advance into a high-impact ${primaryRole} position delivering measurable outcomes across ${industries}.`;
+  state.workStyle = workStyle;
+  state.minSalary = minSalary;
+  state.location = location;
+  state.industries = industries;
+  state.infographicTagline = `Available for ${primaryRole} Roles`;
+
+  // Auto-generate 3-Horizon Trajectory in the background
+  state.horizons = {
+    h1: `Excel in a ${primaryRole} role and deliver high-visibility 90-day wins.`,
+    h2: `Expand leadership scope and drive strategic initiatives across ${industries}.`,
+    h3: `Long-term executive leadership aligned with: ${state.mission}`
+  };
+
+  // Parse the provided resume text and extract experience, skills, and KPIs in the background
+  if (rawResumeText && rawResumeText.trim()) {
+    parseRawResumeTextIntoState(rawResumeText, { silent: true });
+  }
+
+  state.onboardingCompleted = true;
+  saveState({ immediate: true });
+  renderCompassModule();
+  renderResumeStudio();
+  renderAtsBuilder();
+  renderInfographic();
+  fetchLiveJobs(primaryRole, "");
 }
 
 // ============================================================================
@@ -1932,6 +2045,7 @@ function enterAuthenticatedApp(user, profileData) {
   } else {
     state = JSON.parse(JSON.stringify(PERSONA_PRESETS.pm));
     state.name = user.fullName || state.name;
+    state.onboardingCompleted = false;
   }
   document.getElementById("authWall").classList.add("hidden");
   document.getElementById("publicViewerShell").classList.add("hidden");
@@ -1939,8 +2053,10 @@ function enterAuthenticatedApp(user, profileData) {
 
   syncGlobalUI();
   syncPrivacyUI();
+  renderGuidedWizard();
   renderCompassModule();
-  fetchLiveJobs("Product", "");
+  switchTab("journey");
+  fetchLiveJobs(((state.targetRoles || "Product").split(",")[0] || "Product").trim(), "");
 }
 
 async function checkPublicProfileRoute() {
@@ -2083,9 +2199,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const rawUsername = document.getElementById("regUsername").value.trim();
     const email = document.getElementById("regEmail").value.trim().toLowerCase();
     const password = document.getElementById("regPassword").value;
-    const starterKey = document.getElementById("regStarterTemplate").value || "pm";
-    const starterProfile = JSON.parse(JSON.stringify(PERSONA_PRESETS[starterKey] || PERSONA_PRESETS.pm));
+    const starterProfile = JSON.parse(JSON.stringify(PERSONA_PRESETS.pm));
     starterProfile.name = fullName;
+    starterProfile.targetRoles = "";
+    starterProfile.mission = "";
+    starterProfile.onboardingCompleted = false;
 
     // Try server API first
     try {
@@ -2241,21 +2359,62 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("quickJumpJobsBtn").onclick = () => switchTab("jobs");
 
-  // Persona Template Switcher
-  document.getElementById("personaSelect").onchange = (e) => {
-    const preset = PERSONA_PRESETS[e.target.value];
-    if (preset) {
-      const keepName = currentUser ? currentUser.fullName : preset.name;
-      state = JSON.parse(JSON.stringify(preset));
-      state.name = keepName || preset.name;
-      saveState({ immediate: true });
-      renderCompassModule();
-      renderResumeStudio();
-      renderInfographic();
-      renderJobsModule();
-      renderTrackerModule();
-    }
+  // Guided Career Coach Walkthrough Wizard Listeners
+  [1, 2, 3].forEach((n) => {
+    const stepBtn = document.getElementById(`wizStepBtn${n}`);
+    if (stepBtn) stepBtn.onclick = () => setWizardStep(n);
+  });
+
+  document.getElementById("wizToStep2Btn").onclick = () => {
+    setWizardStep(2);
   };
+
+  document.getElementById("wizBackTo1Btn").onclick = () => {
+    setWizardStep(1);
+  };
+
+  document.getElementById("wizResumeFileInput").onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById("wizResumeText").value = String(reader.result || "");
+    };
+    reader.readAsText(file);
+  };
+
+  document.getElementById("wizFillSampleResumeBtn").onclick = () => {
+    const sample = PERSONA_PRESETS.pm;
+    const sampleText = [
+      sample.summary,
+      ...sample.experience.map(
+        (e) => `${e.role} | ${e.company} (${e.period})\n` + e.bullets.map((b) => `• ${b}`).join("\n")
+      )
+    ].join("\n\n");
+    document.getElementById("wizResumeText").value = sampleText;
+  };
+
+  document.getElementById("wizAnalyzeAndFinishBtn").onclick = () => {
+    const rawResume = document.getElementById("wizResumeText").value;
+    autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResume);
+    setWizardStep(3);
+  };
+
+  document.getElementById("wizEditInputsBtn").onclick = () => {
+    setWizardStep(1);
+  };
+
+  document.querySelectorAll("[data-goto]").forEach((btn) => {
+    btn.onclick = () => switchTab(btn.dataset.goto);
+  });
+
+  const restartWizBtn = document.getElementById("restartWizardBtn");
+  if (restartWizBtn) {
+    restartWizBtn.onclick = () => {
+      switchTab("journey");
+      setWizardStep(1);
+    };
+  }
 
   // Export JSON
   document.getElementById("exportDataBtn").onclick = () => {
@@ -2472,31 +2631,89 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (e) {}
 });
 
-function parseRawResumeTextIntoState(rawText) {
+function parseRawResumeTextIntoState(rawText, opts = {}) {
   const lines = rawText
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean);
   if (lines.length === 0) return;
 
-  // Extract bullet-like lines
-  const bullets = lines
-    .filter((l) => /^[•\-*]/.test(l) || (l.length > 45 && /\b(led|built|managed|developed|launched|increased|reduced|created|designed|responsible|helped)\b/i.test(l)))
-    .map((l) => l.replace(/^[•\-*]\s*/, ""))
-    .slice(0, 10);
+  // 1. Extract bullet-like lines & role headers
+  const roles = [];
+  let currentRole = null;
+  const summaryLines = [];
 
-  if (bullets.length > 0) {
-    state.experience = [
-      {
-        role: state.headline || "Imported Experience",
-        company: "Imported Resume History",
-        period: "Recent",
-        bullets
-      },
-      ...(state.experience || []).slice(0, 2)
+  lines.forEach((line) => {
+    const isBullet = /^[•\-*]/.test(line);
+    const hasRolePipe = line.includes("|") && line.length < 95 && !isBullet;
+    const hasDateRange = /\b(20\d\d|19\d\d)\s*[–\-—to]+\s*(20\d\d|present|current)\b/i.test(line) && line.length < 95 && !isBullet;
+
+    if (hasRolePipe || hasDateRange) {
+      const parts = line.split("|").map((p) => p.trim());
+      const dateMatch = line.match(/\b((?:20\d\d|19\d\d)\s*[–\-—to]+\s*(?:20\d\d|Present|Current))\b/i);
+      const period = dateMatch ? dateMatch[1] : "Recent";
+      const roleTitle = (parts[0] || state.headline || "Professional Role").replace(/\((?:20\d\d|19\d\d).*?\)/, "").trim();
+      const companyName = (parts[1] || "Organization").replace(/\((?:20\d\d|19\d\d).*?\)/, "").trim();
+      currentRole = { role: roleTitle, company: companyName, period, bullets: [] };
+      roles.push(currentRole);
+    } else if (isBullet || (line.length > 45 && /\b(led|built|managed|developed|launched|increased|reduced|created|designed|spearheaded|architected|owned|drove|delivered|responsible|helped)\b/i.test(line))) {
+      const cleanBullet = line.replace(/^[•\-*]\s*/, "").trim();
+      if (!currentRole) {
+        const primaryTarget = ((state.targetRoles || state.headline || "Senior Professional").split(",")[0] || "").trim();
+        currentRole = { role: primaryTarget, company: "Recent Experience", period: "2021 – Present", bullets: [] };
+        roles.push(currentRole);
+      }
+      currentRole.bullets.push(cleanBullet);
+    } else if (roles.length === 0 && summaryLines.length < 3 && line.length > 30) {
+      summaryLines.push(line);
+    }
+  });
+
+  if (roles.length > 0) {
+    state.experience = roles.filter((r) => r.bullets.length > 0).slice(0, 5);
+  }
+
+  if (summaryLines.length > 0) {
+    state.summary = summaryLines.join(" ").slice(0, 420);
+  }
+
+  // 2. Automatically extract key skills in the background
+  const SKILL_DICTIONARY = [
+    "Product Strategy", "Roadmapping", "AI / Machine Learning", "LLM Workflows", "B2B SaaS",
+    "SQL & Analytics", "Python", "TypeScript", "React", "Cross-Functional Leadership",
+    "Agile / Scrum", "Project Management", "Enterprise Sales & GTM", "PLG & Monetization",
+    "Data Analysis", "Cloud Architecture", "Customer Success", "UX / Product Design",
+    "Financial Modeling", "Marketing Strategy", "Operations Management", "Healthcare Compliance"
+  ];
+  const lowerRaw = rawText.toLowerCase();
+  const detectedSkills = SKILL_DICTIONARY.filter((sk) => {
+    const tokens = sk.toLowerCase().split(/[\s/&]+/).filter((t) => t.length > 2);
+    return tokens.some((tok) => lowerRaw.includes(tok));
+  }).slice(0, 6);
+
+  if (detectedSkills.length >= 3) {
+    state.skills = detectedSkills.map((name, i) => ({
+      name,
+      level: i < 2 ? 92 : 84,
+      demand: 90
+    }));
+  }
+
+  // 3. Automatically extract numbers/metrics for the 1-Page Infographic in the background
+  const metricMatches = rawText.match(/(\$?\d+(?:\.\d+)?(?:M|K|B|%|\+)|\d+\+\s*(?:years|yrs|users|clients|projects))/gi) || [];
+  const uniqueMetrics = [...new Set(metricMatches)].slice(0, 3);
+  if (uniqueMetrics.length > 0) {
+    const primaryTarget = ((state.targetRoles || state.headline || "Target Role").split(",")[0] || "").trim();
+    state.metrics = [
+      { num: uniqueMetrics[0] || "8+ Yrs", label: "Quantified Resume Impact" },
+      { num: uniqueMetrics[1] || "95%", label: "Key Performance Outcome" },
+      { num: uniqueMetrics[2] || "Top Tier", label: "Execution Track Record" },
+      { num: "100%", label: `Aligned for ${primaryTarget.slice(0, 22)}` }
     ];
   }
-  state.summary = lines.slice(0, 3).join(" ").slice(0, 360);
-  saveState();
-  renderResumeStudio();
+
+  if (!opts.silent) {
+    saveState();
+    renderResumeStudio();
+  }
 }
