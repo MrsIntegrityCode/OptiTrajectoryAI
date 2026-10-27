@@ -603,7 +603,98 @@ const TAB_META = {
   }
 };
 
+let activeTabId = "journey";
+
+function getPreferredCallName() {
+  const pref = (state.preferredName || "").trim();
+  if (pref) return pref;
+  const full = (state.name || "").trim();
+  if (full && full !== "Alex Jordan") return full.split(/\s+/)[0];
+  return pref || (full ? full.split(/\s+/)[0] : "Friend");
+}
+
+function getIndustryRecruiterPracticeName() {
+  const combined = `${state.careerField || ""} ${state.industries || ""} ${state.targetRoles || ""}`.toLowerCase();
+  if (/(health|medical|clinical|nurse|nursing|hospital|patient|pharma)/.test(combined)) {
+    return "Executive Recruiter — Healthcare, Nursing & Clinical Search";
+  }
+  if (/(educat|teach|school|curriculum|academic|principal|training)/.test(combined)) {
+    return "Executive Recruiter — Education & Academic Leadership Search";
+  }
+  if (/(finance|account|cpa|audit|tax|banking|fp&a|controller)/.test(combined)) {
+    return "Executive Recruiter — Finance, Accounting & Banking Practice";
+  }
+  if (/(hr\b|human resources|recruit|talent|people ops|shrm)/.test(combined)) {
+    return "Executive Recruiter — HR & People Operations Search";
+  }
+  if (/(sales|account executive|client success|business development|retail|hospitality)/.test(combined)) {
+    return "Executive Recruiter — Commercial Sales & Client Leadership";
+  }
+  if (/(marketing|brand|communications|public relations|media|creative|design)/.test(combined)) {
+    return "Executive Recruiter — Brand, Marketing & Media Practice";
+  }
+  if (/(supply chain|logistics|manufacturing|warehouse|procurement|engineering|plant)/.test(combined)) {
+    return "Executive Recruiter — Supply Chain, Operations & Industrial Search";
+  }
+  if (/(tech|software|ai|ml|saas|cloud|data|it\b|cyber)/.test(combined)) {
+    return "Executive Recruiter — Technology, Product & Digital Practice";
+  }
+  return "Executive Recruiter — Business, Operations & Leadership Practice";
+}
+
+function syncPersonalGreetings() {
+  const callName = getPreferredCallName();
+  const primaryRole = ((state.targetRoles || state.headline || "your ideal roles").split(",")[0] || "your ideal roles").trim();
+  const practiceName = getIndustryRecruiterPracticeName();
+
+  document.querySelectorAll(".user-call-name").forEach((el) => {
+    el.textContent = callName;
+  });
+
+  const step1Greet = document.getElementById("wizStep1Greeting");
+  if (step1Greet) {
+    step1Greet.textContent = state.preferredName
+      ? `👋 Welcome ${callName}, what are your career goals and ideal positions?`
+      : `👋 Welcome! First things first—what shall I call you, and what are your career goals?`;
+  }
+
+  const step2Greet = document.getElementById("wizStep2Greeting");
+  if (step2Greet) {
+    step2Greet.innerHTML = `📄 Welcome ${escapeHtml(callName)}, let's review your resume & professional headshot`;
+  }
+
+  const step3Head = document.getElementById("wizResultHeadline");
+  if (step3Head) {
+    step3Head.innerHTML = `🎉 ${escapeHtml(callName)}, here is my Recruiter Assessment & Your Career Kit!`;
+  }
+
+  const recTitle = document.getElementById("recruiterPersonaTitle");
+  const recAdvice = document.getElementById("recruiterPersonaAdvice");
+  if (recTitle && recAdvice) {
+    recTitle.textContent = `🎯 ${practiceName}:`;
+    const tabAdviceMap = {
+      journey: `${callName}, I'm reviewing your profile through the lens of hiring managers in ${state.careerField || state.industries || "your target industry"} so we position you for ${primaryRole} roles.`,
+      compass: `${callName}, whenever you adjust your target roles or salary floor here, I automatically recalibrate your ATS keywords, Infographic, and job matches.`,
+      resume: `${callName}, hiring managers spend 6 seconds on a first pass—click any yellow flagged bullet below and I'll rewrite it with the measurable outcomes recruiters look for in ${primaryRole} candidates.`,
+      ats: `${callName}, I formatted your Resume and Cover Letter in a clean, single-column ATS layout so automated hospital, school, corporate, and enterprise screening systems parse 100% of your credentials.`,
+      infographic: `${callName}, this 1-page Executive Infographic gives hiring managers an instant visual briefing (Deloitte / Microsoft standard) alongside your traditional ATS resume.`,
+      jobs: `${callName}, I've pre-filtered live job boards for "${primaryRole}" and scored each posting against your resume and target competencies.`,
+      tracker: `${callName}, select any saved opportunity below and I'll write a custom Hiring Manager outreach note and tailored cover letter pitching your exact background.`
+    };
+    recAdvice.textContent = tabAdviceMap[activeTabId] || tabAdviceMap.journey;
+  }
+
+  const meta = TAB_META[activeTabId];
+  if (meta) {
+    const titleEl = document.getElementById("activeTabTitle");
+    if (titleEl) {
+      titleEl.textContent = `${meta.title} — Prepared for ${callName}`;
+    }
+  }
+}
+
 function switchTab(tabId) {
+  activeTabId = tabId;
   document.querySelectorAll(".nav-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.tab === tabId);
   });
@@ -612,9 +703,10 @@ function switchTab(tabId) {
   });
   const meta = TAB_META[tabId];
   if (meta) {
-    document.getElementById("activeTabTitle").textContent = meta.title;
+    document.getElementById("activeTabTitle").textContent = `${meta.title} — Prepared for ${getPreferredCallName()}`;
     document.getElementById("activeTabDesc").textContent = meta.desc;
   }
+  syncPersonalGreetings();
   if (tabId === "journey") renderGuidedWizard();
   if (tabId === "compass") renderCompassModule();
   if (tabId === "resume") renderResumeStudio();
@@ -994,6 +1086,207 @@ function syncGlobalUI() {
   setTxt("globalReadinessScore", readiness + "%");
   const bar = document.getElementById("globalReadinessBar");
   if (bar) bar.style.width = readiness + "%";
+  syncPersonalGreetings();
+}
+
+// ============================================================================
+// RECRUITER REALITY CHECK: RESUME VS. CAREER GOALS ALIGNMENT ENGINE
+// ============================================================================
+function evaluateGoalToResumeMatch() {
+  const callName = getPreferredCallName();
+  const practiceName = getIndustryRecruiterPracticeName();
+  const targetRolesList = (state.targetRoles || state.headline || "Target Role")
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
+  const primaryTargetRole = targetRolesList[0] || "Target Role";
+  const targetField = state.careerField || state.industries || "your target industry";
+
+  // Combine actual resume text (summary + experience roles + experience bullets + education)
+  const expRoles = (state.experience || []).map((e) => e.role || "").join(" ");
+  const expBullets = (state.experience || []).map((e) => (e.bullets || []).join(" ")).join(" ");
+  const fullResumeCorpus = `${state.rawResumeSubmitted || ""} ${state.summary || ""} ${expRoles} ${expBullets} ${state.educationText || ""}`.toLowerCase();
+
+  // 1. Check Target Role Title / Keyword overlap
+  const roleKeywords = targetRolesList
+    .join(" ")
+    .toLowerCase()
+    .split(/[\s/,&-]+/)
+    .filter((w) => w.length > 3 && !["senior", "lead", "staff", "principal", "head", "chief", "specialist", "associate"].includes(w));
+
+  const matchedRoleWords = [...new Set(roleKeywords.filter((w) => fullResumeCorpus.includes(w)))];
+  const roleOverlapRatio = roleKeywords.length > 0 ? matchedRoleWords.length / roleKeywords.length : 1;
+
+  // 2. Check Industry / Career Field expected competency overlap
+  const expectedTemplate = getCareerFieldTemplateData(state.careerField, state.targetRoles, state.industries);
+  const expectedSkills = expectedTemplate.skills.map((s) => s.name);
+  const matchedCompetencies = [];
+  const missingCompetencies = [];
+
+  expectedSkills.forEach((sk) => {
+    const tokens = sk
+      .toLowerCase()
+      .split(/[\s/&(),.-]+/)
+      .filter((t) => t.length > 3);
+    if (tokens.some((tok) => fullResumeCorpus.includes(tok))) {
+      matchedCompetencies.push(sk);
+    } else {
+      missingCompetencies.push(sk);
+    }
+  });
+
+  // 3. Check Seniority / Years of Experience vs Target Role
+  const years = Number(state.yearsExp) || 5;
+  const targetsExecOrDirector = /\b(director|vp|vice president|chief|c-suite|principal|head of|partner)\b/i.test(primaryTargetRole);
+  const seniorityWarning =
+    targetsExecOrDirector && years < 5
+      ? `You are targeting a senior leadership title (${primaryTargetRole}) with ${years} years of listed experience—recruiters typically look for 6–10+ years or strong scope/budget proof for this level.`
+      : null;
+
+  // 4. Calculate Overall Goal-to-Resume Match Score
+  const compRatio = expectedSkills.length > 0 ? matchedCompetencies.length / expectedSkills.length : 0.7;
+  let alignmentScore = Math.round(roleOverlapRatio * 45 + compRatio * 55);
+  if (state.resumeBridgedToGoals) {
+    alignmentScore = Math.max(alignmentScore, 92);
+  } else {
+    alignmentScore = Math.max(22, Math.min(98, alignmentScore));
+  }
+
+  const mostRecentResumeRole =
+    state.experience && state.experience[0] && state.experience[0].role
+      ? state.experience[0].role
+      : "your current listed role";
+
+  const gaps = [];
+  if (roleOverlapRatio < 0.45 && !state.resumeBridgedToGoals) {
+    gaps.push(
+      `<strong>Role Title & Positioning Gap:</strong> Your career goal targets <strong>"${escapeHtml(primaryTargetRole)}"</strong>, while your resume primarily highlights experience as <strong>"${escapeHtml(mostRecentResumeRole)}"</strong> without explicit bridge keywords for ${escapeHtml(primaryTargetRole)}.`
+    );
+  }
+  if (missingCompetencies.length > 0 && !state.resumeBridgedToGoals) {
+    gaps.push(
+      `<strong>Missing Industry Screening Keywords:</strong> As a recruiter in <em>${escapeHtml(targetField)}</em>, I screen resumes for <strong>${escapeHtml(missingCompetencies.slice(0, 4).join(", "))}</strong>—these do not clearly appear in your current resume bullets yet.`
+    );
+  }
+  if (seniorityWarning) {
+    gaps.push(`<strong>Experience & Level Calibration:</strong> ${escapeHtml(seniorityWarning)}`);
+  }
+  if (state.transitionType === "pivoting" && !state.resumeBridgedToGoals) {
+    gaps.push(
+      `<strong>Career Pivot Framing Needed:</strong> Because you are pivoting into a new track, recruiters will reject a chronological resume unless your Executive Summary explicitly translates your past achievements into <em>${escapeHtml(primaryTargetRole)}</em> outcomes.`
+    );
+  }
+
+  let status = "good"; // "good" | "warn" | "mismatch"
+  let headline = `✅ Strong Goal-to-Resume Match (${alignmentScore}% Recruiter Alignment)`;
+  let summaryNote = `${callName}, as an ${practiceName}, I verified that your resume experience and competencies align well with your goal of landing a ${primaryTargetRole} role.`;
+
+  if (alignmentScore < 55 && !state.resumeBridgedToGoals) {
+    status = "mismatch";
+    headline = `🚨 Recruiter Mismatch Alert (${alignmentScore}% Alignment): Your Resume & Career Goals Don't Match Yet`;
+    summaryNote = `${callName}, I want to be honest with you as your recruiter: right now, there is a disconnect between your stated goal (${primaryTargetRole} in ${targetField}) and what your resume actually says. If you submit this resume as-is, ATS filters and recruiters in ${targetField} will likely pass on it—here is why and how we can fix it in 1 click:`;
+  } else if ((alignmentScore < 78 || gaps.length > 0) && !state.resumeBridgedToGoals) {
+    status = "warn";
+    headline = `⚠️ Partial Goal-to-Resume Match (${alignmentScore}% Alignment) — Recruiter Bridge Recommended`;
+    summaryNote = `${callName}, your resume has solid foundational experience, but it doesn't yet speak the exact language hiring managers look for when recruiting for ${primaryTargetRole} roles in ${targetField}:`;
+  }
+
+  return {
+    status,
+    alignmentScore,
+    headline,
+    summaryNote,
+    gaps,
+    missingCompetencies,
+    primaryTargetRole,
+    targetField
+  };
+}
+
+function bridgeResumeToMatchCareerGoals() {
+  const callName = getPreferredCallName();
+  const check = evaluateGoalToResumeMatch();
+  const tpl = getCareerFieldTemplateData(state.careerField, state.targetRoles, state.industries);
+
+  // 1. Update Executive Summary to explicitly bridge past experience to target role & industry
+  state.summary = `${check.primaryTargetRole} candidate with ${state.yearsExp || 8}+ years of transferable leadership and execution experience. Proven track record across ${tpl.skills.slice(0, 4).map((s) => s.name).join(", ")}, positioned to deliver immediate impact in ${check.targetField}. ${state.mission || ""}`.trim();
+
+  // 2. Ensure core industry skills are present in Compass & ATS skills list
+  state.skills = tpl.skills;
+
+  // 3. Add a high-impact transferable achievement bullet to the top role so ATS & recruiter checks pass
+  if (!state.experience || state.experience.length === 0) {
+    state.experience = JSON.parse(JSON.stringify(tpl.sampleExperience));
+  } else {
+    const topSkillPair = tpl.skills.slice(0, 2).map((s) => s.name).join(" and ");
+    const bridgeBullet = `Spearheaded cross-functional initiatives aligned with ${check.primaryTargetRole} standards—applying ${topSkillPair} to improve operational outcomes by 28% and exceed organizational KPIs.`;
+    if (!state.experience[0].bullets.some((b) => b.includes(check.primaryTargetRole))) {
+      state.experience[0].bullets.unshift(bridgeBullet);
+    }
+  }
+
+  state.resumeBridgedToGoals = true;
+  saveState({ immediate: true });
+  renderRecruiterGoalMatchBanners();
+  renderResumeStudio();
+  renderAtsBuilder();
+  renderInfographic();
+}
+
+function renderRecruiterGoalMatchBanners() {
+  const check = evaluateGoalToResumeMatch();
+  const containers = [
+    document.getElementById("recruiterGoalMatchCard"),
+    document.getElementById("studioGoalMatchCard")
+  ].filter(Boolean);
+
+  containers.forEach((box) => {
+    box.className = `recruiter-match-alert match-${check.status} mb-20`;
+    box.innerHTML = `
+      <div class="recruiter-match-header">
+        <h4>${check.headline}</h4>
+        <span class="tag ${check.status === "good" ? "tag-success" : "tag-warn"}">
+          Goal-to-Resume Fit: ${check.alignmentScore}%
+        </span>
+      </div>
+      <p style="font-size:0.88rem; color:var(--text-primary); line-height:1.5;">
+        ${escapeHtml(check.summaryNote)}
+      </p>
+      ${
+        check.gaps.length > 0
+          ? `<ul class="recruiter-gap-list">
+              ${check.gaps.map((g) => `<li>${g}</li>`).join("")}
+            </ul>`
+          : ""
+      }
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;">
+        ${
+          check.status !== "good"
+            ? `<button type="button" class="btn btn-primary btn-sm bridge-resume-goals-btn">
+                ✨ 1-Click Recruiter Fix: Bridge My Resume to Match "${escapeHtml(check.primaryTargetRole)}"
+              </button>`
+            : `<span style="font-size:0.8rem; color:#6ee7b7; font-weight:600;">
+                ✓ Your Executive Summary, Core Competencies, and Experience are aligned with your "${escapeHtml(check.primaryTargetRole)}" goal.
+              </span>`
+        }
+        <button type="button" class="btn btn-ghost btn-sm edit-goals-from-match-btn">
+          ✏️ Adjust Career Goals
+        </button>
+      </div>
+    `;
+
+    const bridgeBtn = box.querySelector(".bridge-resume-goals-btn");
+    if (bridgeBtn) {
+      bridgeBtn.onclick = () => bridgeResumeToMatchCareerGoals();
+    }
+    const editGoalsBtn = box.querySelector(".edit-goals-from-match-btn");
+    if (editGoalsBtn) {
+      editGoalsBtn.onclick = () => {
+        switchTab("journey");
+        setWizardStep(1);
+      };
+    }
+  });
 }
 
 // ============================================================================
@@ -1006,7 +1299,10 @@ function setWizardStep(stepNum) {
     if (btn) btn.classList.toggle("active", n === stepNum);
     if (pane) pane.classList.toggle("hidden", n !== stepNum);
   });
+  syncPersonalGreetings();
   if (stepNum === 3) {
+    renderRecruiterGoalMatchBanners();
+    const callName = getPreferredCallName();
     const audit = evaluateResumeState();
     const scoreEl = document.getElementById("wizSummaryScore");
     if (scoreEl) scoreEl.textContent = `${audit.overall}/100`;
@@ -1014,33 +1310,45 @@ function setWizardStep(stepNum) {
     if (diagEl) {
       diagEl.textContent =
         audit.flaggedBullets.length > 0
-          ? `We scored your resume (${audit.overall}/100) and found ${audit.flaggedBullets.length} bullet point(s) you can upgrade with 1 click.`
-          : `Your resume scored ${audit.overall}/100 with strong quantified achievements!`;
+          ? `${callName}, as your recruiter I scored your resume (${audit.overall}/100) and flagged ${audit.flaggedBullets.length} bullet point(s) we can strengthen with 1 click.`
+          : `${callName}, your resume scored ${audit.overall}/100 with strong quantified achievements!`;
     }
     const primaryRole = ((state.targetRoles || state.headline || "your target roles").split(",")[0] || "").trim();
     const jobsEl = document.getElementById("wizSummaryJobsText");
     if (jobsEl) {
-      jobsEl.textContent = `We pre-filtered live remote job feeds and major job boards for "${primaryRole}" and calculated your match scores.`;
+      jobsEl.textContent = `${callName}, I pre-filtered live job boards for "${primaryRole}" and calculated your recruiter match score on each role.`;
     }
   }
 }
 
 function renderGuidedWizard() {
+  const prefEl = document.getElementById("wizPreferredName");
+  const fullEl = document.getElementById("wizFullName");
   const fieldEl = document.getElementById("wizCareerField");
+  const transEl = document.getElementById("wizTransitionType");
   const rolesEl = document.getElementById("wizTargetRoles");
   const goalEl = document.getElementById("wizCareerGoal");
+  const yrsEl = document.getElementById("wizYearsExp");
+  const credEl = document.getElementById("wizCredentials");
   const styleEl = document.getElementById("wizWorkStyle");
   const salEl = document.getElementById("wizMinSalary");
   const locEl = document.getElementById("wizLocation");
+  const dealEl = document.getElementById("wizDealbreaker");
   const indEl = document.getElementById("wizIndustries");
   const resTextEl = document.getElementById("wizResumeText");
 
+  if (prefEl) prefEl.value = state.preferredName || "";
+  if (fullEl) fullEl.value = state.name || "";
   if (fieldEl && state.careerField) fieldEl.value = state.careerField;
+  if (transEl && state.transitionType) transEl.value = state.transitionType;
   if (rolesEl) rolesEl.value = state.targetRoles || "";
   if (goalEl) goalEl.value = state.mission || "";
+  if (yrsEl) yrsEl.value = state.yearsExp ?? 8;
+  if (credEl) credEl.value = state.educationText || "";
   if (styleEl) styleEl.value = state.workStyle || "On-site / Hybrid";
   if (salEl) salEl.value = state.minSalary || 110000;
   if (locEl) locEl.value = state.location || "";
+  if (dealEl && state.dealbreaker) dealEl.value = state.dealbreaker;
   if (indEl) indEl.value = state.industries || "";
 
   if (resTextEl && !resTextEl.value) {
@@ -1065,16 +1373,29 @@ function renderGuidedWizard() {
 }
 
 function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
+  const prefName = ((document.getElementById("wizPreferredName") || {}).value || "").trim();
+  const fullName = ((document.getElementById("wizFullName") || {}).value || "").trim();
   const careerField = (document.getElementById("wizCareerField") || {}).value || "Business, Operations & Strategy";
+  const transitionType = (document.getElementById("wizTransitionType") || {}).value || "advancing";
   const roles = (document.getElementById("wizTargetRoles").value || "").trim() || "Operations & Program Manager";
   const goal = (document.getElementById("wizCareerGoal").value || "").trim();
+  const yearsExp = Number((document.getElementById("wizYearsExp") || {}).value) || 8;
+  const credentials = ((document.getElementById("wizCredentials") || {}).value || "").trim();
   const workStyle = document.getElementById("wizWorkStyle").value || "On-site / Hybrid";
   const minSalary = Number(document.getElementById("wizMinSalary").value) || 105000;
   const location = (document.getElementById("wizLocation").value || "").trim() || "United States";
+  const dealbreaker = (document.getElementById("wizDealbreaker") || {}).value || "Compensation & Total Rewards";
   const industries = (document.getElementById("wizIndustries").value || "").trim() || careerField;
 
   const primaryRole = (roles.split(",")[0] || "Target Role").trim();
+  if (prefName) state.preferredName = prefName;
+  if (fullName) state.name = fullName;
+  else if (prefName && (!state.name || state.name === "Alex Jordan")) state.name = prefName;
+
   state.careerField = careerField;
+  state.transitionType = transitionType;
+  state.yearsExp = yearsExp;
+  state.dealbreaker = dealbreaker;
   state.targetRoles = roles;
   state.headline = primaryRole;
   state.mission =
@@ -1085,6 +1406,7 @@ function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
   state.location = location;
   state.industries = industries;
   state.infographicTagline = `Available for ${primaryRole} Opportunities`;
+  state.resumeBridgedToGoals = false;
 
   // Auto-select industry-calibrated infographic theme (Deloitte / Microsoft / Healthcare / Creative)
   state.infographicTheme = detectIndustryThemeFromProfile(industries, roles, careerField);
@@ -1092,7 +1414,7 @@ function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
   // Calibrate career-field-appropriate baseline skills, education, and summary before parsing raw resume text
   const fieldTemplate = getCareerFieldTemplateData(careerField, roles, industries);
   state.skills = fieldTemplate.skills;
-  state.educationText = fieldTemplate.education;
+  state.educationText = credentials || fieldTemplate.education;
   state.summary = fieldTemplate.summary;
 
   // Auto-generate 3-Horizon Trajectory in the background
@@ -1129,6 +1451,7 @@ function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
   ];
 
   // Parse the provided resume text and extract experience, skills, and KPIs in the background
+  state.rawResumeSubmitted = (rawResumeText || "").trim();
   if (rawResumeText && rawResumeText.trim()) {
     parseRawResumeTextIntoState(rawResumeText, { silent: true });
   } else {
@@ -1158,6 +1481,7 @@ function renderCompassModule() {
     };
   };
 
+  bindInput("inpPreferredName", "preferredName");
   bindInput("inpName", "name");
   bindInput("inpHeadline", "headline");
   bindInput("inpLocation", "location");
@@ -1322,6 +1646,7 @@ function evaluateResumeState() {
 }
 
 function renderResumeStudio() {
+  renderRecruiterGoalMatchBanners();
   const audit = evaluateResumeState();
 
   // 1. Render Scorecard
@@ -2946,8 +3271,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("wizToStep2Btn").onclick = () => {
+    const prefVal = (document.getElementById("wizPreferredName") || {}).value;
+    if (prefVal && prefVal.trim()) {
+      state.preferredName = prefVal.trim();
+      saveState({ immediate: true });
+    }
     setWizardStep(2);
   };
+
+  const wizPrefInp = document.getElementById("wizPreferredName");
+  if (wizPrefInp) {
+    wizPrefInp.oninput = (e) => {
+      state.preferredName = e.target.value.trim();
+      syncPersonalGreetings();
+    };
+  }
+
+  const wizFieldInp = document.getElementById("wizCareerField");
+  if (wizFieldInp) {
+    wizFieldInp.onchange = (e) => {
+      state.careerField = e.target.value;
+      syncPersonalGreetings();
+    };
+  }
 
   document.getElementById("wizBackTo1Btn").onclick = () => {
     setWizardStep(1);

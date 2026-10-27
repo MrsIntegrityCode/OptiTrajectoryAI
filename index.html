@@ -242,11 +242,20 @@
           </div>
           <div class="pill-stat">
             <span>Target Floor:</span>
-            <strong id="topbarSalary">$175k+</strong>
+            <strong id="topbarSalary">$125k+</strong>
           </div>
           <button class="btn btn-primary" id="quickJumpJobsBtn">Find Matching Jobs →</button>
         </div>
       </header>
+
+      <!-- Persistent Industry Recruiter Advisor Bar -->
+      <div class="recruiter-advisor-bar no-print" id="globalRecruiterBar">
+        <div class="recruiter-avatar-badge">🎯</div>
+        <div class="recruiter-bar-text">
+          <strong id="recruiterPersonaTitle">Your Executive Recruiter (Business & Operations Practice):</strong>
+          <span id="recruiterPersonaAdvice">Welcome! Tell me what to call you and what roles you're targeting—I'll evaluate your resume against hiring manager standards in your exact industry.</span>
+        </div>
+      </div>
 
       <!-- ============================================================== -->
       <!-- TAB 0: GUIDED CAREER COACH WALKTHROUGH (Default Landing)       -->
@@ -267,21 +276,31 @@
             <div class="wiz-connector"></div>
             <button class="wiz-step" data-wstep="3" id="wizStepBtn3">
               <span class="wiz-num">3</span>
-              <span>Your Action Plan & Results</span>
+              <span>Recruiter Match Check & Results</span>
             </button>
           </div>
 
           <!-- STEP 1: CAREER GOALS & IDEAL POSITIONS -->
           <div class="card wizard-card" id="wizPane1">
             <div class="wizard-hero">
-              <span class="tag tag-accent">Step 1 of 3 • Takes 30 Seconds</span>
-              <h3>👋 Welcome! What are your career goals and ideal positions?</h3>
-              <p>Tell us what you're aiming for in plain English. We'll automatically configure your skills radar, trajectory, and job matching in the background.</p>
+              <span class="tag tag-accent" id="wizRecruiterBadgeStep1">Step 1 of 3 • Executive Recruiter Intake</span>
+              <h3 id="wizStep1Greeting">👋 Welcome! First things first—what shall I call you, and what are your career goals?</h3>
+              <p id="wizStep1Subtext">I'm your dedicated recruiter specialist. Share your preferred name and target positions below so I can tailor our entire strategy to your industry's hiring standards.</p>
             </div>
 
             <div class="form-grid mt-20">
-              <div class="form-group full-width">
-                <label for="wizCareerField">What is your primary career field or industry sector?</label>
+              <div class="form-group">
+                <label for="wizPreferredName">1. What shall I call you? (First Name / Nickname)</label>
+                <input type="text" id="wizPreferredName" class="input-field input-lg" placeholder="e.g. Mel" />
+              </div>
+
+              <div class="form-group">
+                <label for="wizFullName">Full Name (for your Official Resume & Infographic)</label>
+                <input type="text" id="wizFullName" class="input-field input-lg" placeholder="e.g. Melissa Ruth" />
+              </div>
+
+              <div class="form-group">
+                <label for="wizCareerField">2. What is your target career field or industry sector?</label>
                 <select id="wizCareerField" class="input-select">
                   <option value="Business, Operations & Strategy">Business, Operations, Consulting & Management</option>
                   <option value="Healthcare, Nursing & Clinical">Healthcare, Nursing, Medical & Life Sciences</option>
@@ -297,18 +316,39 @@
                 </select>
               </div>
 
+              <div class="form-group">
+                <label for="wizTransitionType">3. What kind of career move are you making?</label>
+                <select id="wizTransitionType" class="input-select">
+                  <option value="advancing">Advancing in my current field (Next Level / Promotion)</option>
+                  <option value="pivoting">Pivoting into a new industry or career track</option>
+                  <option value="leadership">Stepping into Management / Executive Leadership</option>
+                  <option value="lateral">Finding a better organization / culture in my current role</option>
+                  <option value="returning">Returning to the workforce after a career break</option>
+                </select>
+              </div>
+
               <div class="form-group full-width">
-                <label for="wizTargetRoles">What are your ideal job titles? (e.g. Operations Manager, Registered Nurse, Financial Analyst, Elementary Teacher, Marketing Director, HR Manager)</label>
+                <label for="wizTargetRoles">4. What are your ideal job titles? (e.g. Operations Director, Registered Nurse, Financial Analyst, Elementary Teacher, HR Manager)</label>
                 <input type="text" id="wizTargetRoles" class="input-field input-lg" placeholder="Type 1 to 3 ideal job titles..." />
               </div>
 
               <div class="form-group full-width">
-                <label for="wizCareerGoal">In 1–2 sentences, what is your #1 career goal right now?</label>
+                <label for="wizCareerGoal">5. In 1–2 sentences, what is your #1 career goal right now?</label>
                 <textarea id="wizCareerGoal" class="input-field" rows="2" placeholder="e.g. Step into a senior leadership role where I can improve operational excellence, mentor teams, and grow my compensation."></textarea>
               </div>
 
               <div class="form-group">
-                <label for="wizWorkStyle">Where do you want to work?</label>
+                <label for="wizYearsExp">6. Years of Relevant Experience</label>
+                <input type="number" id="wizYearsExp" class="input-field" min="0" max="50" placeholder="8" />
+              </div>
+
+              <div class="form-group">
+                <label for="wizCredentials">7. Degrees, Licenses, or Certifications Held (Important for Recruiter Screening)</label>
+                <input type="text" id="wizCredentials" class="input-field" placeholder="e.g. MBA, BSN/RN, CPA, PMP, Teaching License, SHRM, B.A." />
+              </div>
+
+              <div class="form-group">
+                <label for="wizWorkStyle">8. Where do you want to work?</label>
                 <select id="wizWorkStyle" class="input-select">
                   <option value="On-site / Hybrid">On-site or Hybrid</option>
                   <option value="Remote / Hybrid">Remote or Hybrid</option>
@@ -319,24 +359,35 @@
               </div>
 
               <div class="form-group">
-                <label for="wizMinSalary">Ideal Minimum Base Salary ($ USD)</label>
+                <label for="wizMinSalary">9. Target Minimum Base Salary ($ USD)</label>
                 <input type="number" id="wizMinSalary" class="input-field" step="5000" placeholder="95000" />
               </div>
 
               <div class="form-group">
-                <label for="wizLocation">Your City / State</label>
-                <input type="text" id="wizLocation" class="input-field" placeholder="e.g. Chicago, IL or Austin, TX" />
+                <label for="wizLocation">10. Your City / State (or Relocation Target)</label>
+                <input type="text" id="wizLocation" class="input-field" placeholder="e.g. Chicago, IL or Open to Relocation" />
               </div>
 
               <div class="form-group">
-                <label for="wizIndustries">Specific Industries or Specialties (Optional)</label>
-                <input type="text" id="wizIndustries" class="input-field" placeholder="e.g. Healthcare, Higher Education, Corporate Finance, Retail, Consulting" />
+                <label for="wizDealbreaker">11. Your #1 Non-Negotiable / Priority in Your Next Role</label>
+                <select id="wizDealbreaker" class="input-select">
+                  <option value="Compensation & Total Rewards">Meeting my target salary & benefits floor</option>
+                  <option value="Work-Life Balance & Flexibility">Work-life balance & schedule flexibility</option>
+                  <option value="Leadership Scope & Autonomy">Leadership scope, autonomy & decision-making</option>
+                  <option value="Mission-Driven Culture & Stability">Supportive, mission-driven team culture & stability</option>
+                  <option value="Clear Promotion & Growth Track">Clear advancement & career growth trajectory</option>
+                </select>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="wizIndustries">Specific Sub-Industries or Specialties (Optional)</label>
+                <input type="text" id="wizIndustries" class="input-field" placeholder="e.g. Pediatric Healthcare, Higher Education, Corporate Finance, Retail Operations, Advisory" />
               </div>
             </div>
 
             <div class="wizard-footer-bar">
-              <span>All detailed settings are handled automatically behind the scenes.</span>
-              <button class="btn btn-primary btn-lg" id="wizToStep2Btn">Next: Provide Your Resume →</button>
+              <span>As your recruiter, I'll use these answers to audit your resume against your goals in Step 2.</span>
+              <button class="btn btn-primary btn-lg" id="wizToStep2Btn">Next: Provide Your Resume & Headshot →</button>
             </div>
           </div>
 
@@ -344,8 +395,8 @@
           <div class="card wizard-card hidden" id="wizPane2">
             <div class="wizard-hero">
               <span class="tag tag-accent">Step 2 of 3 • Resume & Infographic Headshot</span>
-              <h3>📄 Provide your resume & professional headshot</h3>
-              <p>We'll extract your experience for your ATS Resume & Cover Letter, and combine your headshot with an industry-calibrated executive infographic (Deloitte / Microsoft standard layout).</p>
+              <h3 id="wizStep2Greeting">📄 Now <span class="user-call-name">Friend</span>, provide your resume & professional headshot</h3>
+              <p id="wizStep2Subtext">I'll cross-check your resume against your target roles to verify you're a strong match, format your ATS Resume & Cover Letter, and build your industry-calibrated 1-page Infographic.</p>
             </div>
 
             <!-- Headshot Upload Bar -->
@@ -396,41 +447,46 @@
           <!-- STEP 3: YOUR PERSONALIZED WALKTHROUGH & RESULTS HUB -->
           <div class="card wizard-card hidden" id="wizPane3">
             <div class="wizard-hero">
-              <span class="tag tag-success">✓ Career Kit Ready!</span>
-              <h3 id="wizResultHeadline">🎉 Your Personalized Career Trajectory Kit is Ready!</h3>
-              <p>Based on your goals and resume, we've evaluated your profile and generated everything you need. Follow the guided steps below:</p>
+              <span class="tag tag-success" id="wizStep3Badge">✓ Industry Recruiter Evaluation Complete</span>
+              <h3 id="wizResultHeadline">🎉 <span class="user-call-name">Mel</span>, here is my Recruiter Assessment & Your Career Kit!</h3>
+              <p id="wizResultSubtext">As an expert recruiter in your target industry, I first checked whether your current resume aligns with your career goals and ideal positions:</p>
+            </div>
+
+            <!-- RECRUITER REALITY CHECK: RESUME VS. CAREER GOALS MATCH BANNER -->
+            <div class="recruiter-match-alert mt-16" id="recruiterGoalMatchCard">
+              <!-- Populated dynamically by evaluateGoalToResumeMatch() -->
             </div>
 
             <div class="guided-results-grid mt-20">
               <!-- Result Card 1: Resume Evaluation & Quick Fixes -->
               <div class="guided-result-card">
-                <div class="gr-step-badge">Step A • Resume Evaluation</div>
-                <h4>📄 Your Resume Score: <span id="wizSummaryScore" style="color:#34d399;">88/100</span></h4>
-                <p id="wizSummaryDiagText">We analyzed your bullet points for quantified impact and action verbs, and prepared 1-click Google XYZ rewrites.</p>
+                <div class="gr-step-badge">Step A • Recruiter Resume Audit</div>
+                <h4>📄 <span class="user-call-name">Your</span> Resume Score: <span id="wizSummaryScore" style="color:#34d399;">88/100</span></h4>
+                <p id="wizSummaryDiagText">I audited your bullet points for quantified impact and action verbs, and prepared 1-click rewrites tailored to your industry.</p>
                 <button class="btn btn-primary btn-sm mt-12" data-goto="resume">Review & Upgrade Bullets →</button>
               </div>
 
               <!-- Result Card 2: ATS Formatted Resume & Cover Letter -->
               <div class="guided-result-card">
                 <div class="gr-step-badge">Step B • Application-Ready Docs</div>
-                <h4>📑 ATS Resume & Cover Letter</h4>
-                <p>Your clean, single-column ATS-compliant Resume and Cover Letter are formatted and ready to download as PDF or Word (`.doc`).</p>
+                <h4>📑 <span class="user-call-name">Your</span> ATS Resume & Cover Letter</h4>
+                <p>Your clean, single-column ATS-compliant Resume and Cover Letter are formatted for recruiter & ATS screening in PDF or Word (`.doc`).</p>
                 <button class="btn btn-primary btn-sm mt-12" data-goto="ats">View & Download ATS Docs →</button>
               </div>
 
               <!-- Result Card 3: 1-Page Candidate Infographic -->
               <div class="guided-result-card">
-                <div class="gr-step-badge">Step C • Personal Brand</div>
-                <h4>🎨 Your 1-Page Visual Infographic</h4>
-                <p>We turned your career highlights, KPIs, and top skills into a striking executive 1-pager (private by default, or opt-in to share).</p>
+                <div class="gr-step-badge">Step C • Executive Brand</div>
+                <h4>🎨 <span class="user-call-name">Your</span> 1-Page Visual Infographic</h4>
+                <p>I formatted your headshot, KPIs, and core capabilities into a Deloitte / Microsoft industry-standard executive one-pager.</p>
                 <button class="btn btn-primary btn-sm mt-12" data-goto="infographic">Open My Infographic →</button>
               </div>
 
               <!-- Result Card 4: Live Job Discovery & Matching -->
               <div class="guided-result-card">
-                <div class="gr-step-badge">Step D • Real Job Matches</div>
+                <div class="gr-step-badge">Step D • Recruiter-Sourced Matches</div>
                 <h4>🔍 Find Matching Real Jobs</h4>
-                <p id="wizSummaryJobsText">We pre-filtered live remote job feeds and major job boards for your ideal roles and calculated your match scores.</p>
+                <p id="wizSummaryJobsText">I pre-filtered live job boards for your ideal roles and scored each opportunity against your profile.</p>
                 <button class="btn btn-primary btn-sm mt-12" data-goto="jobs">Explore Matching Jobs →</button>
               </div>
             </div>
@@ -450,7 +506,7 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <h3>🧭 Your Career Goals & Ideal Positions</h3>
+              <h3>🧭 <span class="user-call-name">Your</span> Career Goals & Ideal Positions</h3>
               <p>Keep these simple—changes here automatically update your ATS Resume, Cover Letter, Infographic, and Job Matches.</p>
             </div>
             <button class="btn btn-primary btn-sm" onclick="switchTab('resume')">Next Step: Resume Optimizer →</button>
@@ -458,10 +514,14 @@
 
           <div class="form-grid">
             <div class="form-group">
-              <label for="inpName">Full Name</label>
-              <input type="text" id="inpName" class="input-field" placeholder="e.g. Alex Jordan" />
+              <label for="inpPreferredName">What shall I call you? (Preferred Name)</label>
+              <input type="text" id="inpPreferredName" class="input-field" placeholder="e.g. Mel" />
             </div>
             <div class="form-group">
+              <label for="inpName">Full Legal Name (for Resume & Infographic)</label>
+              <input type="text" id="inpName" class="input-field" placeholder="e.g. Melissa Ruth" />
+            </div>
+            <div class="form-group full-width">
               <label for="inpHeadline">Professional Headline</label>
               <input type="text" id="inpHeadline" class="input-field" placeholder="e.g. Operations Director, Registered Nurse, Senior Financial Analyst" />
             </div>
@@ -554,6 +614,9 @@
       <!-- TAB 2: RESUME EVALUATION & OPTIMIZATION STUDIO                 -->
       <!-- ============================================================== -->
       <section class="tab-panel" id="tab-resume">
+        <!-- Recruiter Goal-vs-Resume Match Check in Resume Studio -->
+        <div class="recruiter-match-alert mb-20" id="studioGoalMatchCard"></div>
+
         <div class="scorecard-grid" id="resumeScorecard"></div>
 
         <div class="grid-2col mt-20">
