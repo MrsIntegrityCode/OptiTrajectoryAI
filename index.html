@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiTrajectoryAI — Optimize Your Career Trajectory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- ================================================================ -->
+  <!-- 1. AUTHENTICATION WALL (Required to use the app)                 -->
+  <!-- ================================================================ -->
+  <div class="auth-wall" id="authWall">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">OptiTrajectoryAI</h1>
+          <p class="brand-subtitle">Optimize Your Career Trajectory</p>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tabLoginBtn" type="button">Log In</button>
+        <button class="auth-tab-btn" id="tabRegisterBtn" type="button">Create Account</button>
+      </div>
+
+      <div id="authErrorBox" class="auth-error hidden"></div>
+
+      <!-- Log In Form -->
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" class="input-field" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="input-field" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary auth-submit-btn">Log In to Workspace →</button>
+      </form>
+
+      <!-- Create Account Form -->
+      <form id="registerForm" class="auth-form hidden">
+        <div class="form-group">
+          <label for="regName">Full Name</label>
+          <input type="text" id="regName" class="input-field" placeholder="e.g. Alex Jordan" required />
+        </div>
+        <div class="form-group">
+          <label for="regUsername">Custom Profile Handle (for optional public link)</label>
+          <input type="text" id="regUsername" class="input-field" placeholder="e.g. alex-jordan" />
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email Address</label>
+          <input type="email" id="regEmail" class="input-field" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Password (min 6 chars)</label>
+          <input type="password" id="regPassword" class="input-field" placeholder="At least 6 characters" minlength="6" required />
+        </div>
+        <div class="form-group">
+          <label for="regStarterTemplate">Starter Career Template</label>
+          <select id="regStarterTemplate" class="input-select">
+            <option value="pm">Product & AI Leadership Template</option>
+            <option value="eng">Full-Stack & Systems Engineering Template</option>
+            <option value="mkt">Growth & Product Marketing Template</option>
+          </select>
+        </div>
+        <div class="privacy-notice-box">
+          🔒 <strong>Private by Default:</strong> Your Career Compass, Resume, and Infographic are 100% private to your account unless you explicitly turn on Public Sharing inside the app.
+        </div>
+        <button type="submit" class="btn btn-primary auth-submit-btn">Create Private Account →</button>
+      </form>
+
+      <div class="auth-demo-divider">
+        <span>Or jump right in</span>
+      </div>
+      <button type="button" id="quickDemoAccountBtn" class="btn btn-secondary" style="width:100%;">
+        ⚡ Instant 1-Click Demo Account Login
+      </button>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- 2. PUBLIC VIEWER SHELL (Only shown when visiting ?u=handle)      -->
+  <!-- ================================================================ -->
+  <div class="public-viewer-shell hidden" id="publicViewerShell">
+    <header class="public-topbar no-print">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+          </svg>
+        </div>
+        <div>
+          <strong style="font-size:0.95rem;">OptiTrajectoryAI Verified Candidate Portfolio</strong>
+          <span class="tag tag-success" style="margin-left:8px;">Public View Enabled by Candidate</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <a href="./" class="btn btn-primary btn-sm">Log In / Optimize Your Career Trajectory →</a>
+      </div>
+    </header>
+    <div id="publicViewerContent" class="infographic-stage" style="padding: 30px 20px;"></div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- 3. AUTHENTICATED WORKSPACE SHELL                                 -->
+  <!-- ================================================================ -->
+  <div class="app-shell hidden" id="appShell">
+    <!-- Left Sidebar Navigation -->
+    <aside class="sidebar no-print">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">OptiTrajectoryAI</h1>
+          <p class="brand-subtitle">Optimize Your Career Trajectory</p>
+        </div>
+      </div>
+
+      <!-- Logged-in Candidate Card + Privacy Pill -->
+      <div class="candidate-mini-card" id="sidebarProfileCard">
+        <div class="mini-avatar" id="sidebarAvatar">AJ</div>
+        <div class="mini-info" style="flex:1;">
+          <div class="mini-name" id="sidebarName">Alex Jordan</div>
+          <div class="mini-role" id="sidebarRole">Staff Product Manager</div>
+          <div style="margin-top:4px;">
+            <span class="tag tag-warn" id="sidebarPrivacyBadge" style="font-size:0.66rem; padding:2px 6px;">🔒 Private</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Readiness Meter -->
+      <div class="readiness-box">
+        <div class="readiness-row">
+          <span>Career Readiness</span>
+          <strong id="globalReadinessScore">86%</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="globalReadinessBar" style="width: 86%"></div>
+        </div>
+        <div class="readiness-caption" id="globalReadinessHint">Synced to your account</div>
+      </div>
+
+      <!-- Primary Navigation Tabs -->
+      <nav class="side-nav" aria-label="Primary Navigation">
+        <button class="nav-btn active" data-tab="compass">
+          <span class="nav-icon">🧭</span>
+          <span class="nav-text">
+            <strong>Career Compass</strong>
+            <small>Goals, Salary & Skills Gap</small>
+          </span>
+        </button>
+
+        <button class="nav-btn" data-tab="resume">
+          <span class="nav-icon">📄</span>
+          <span class="nav-text">
+            <strong>Resume Studio</strong>
+            <small>Evaluation & Bullet Optimizer</small>
+          </span>
+          <span class="nav-badge" id="navResumeBadge">84</span>
+        </button>
+
+        <button class="nav-btn" data-tab="infographic">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-text">
+            <strong>Candidate Infographic</strong>
+            <small>Visual 1-Pager & Public Opt-In</small>
+          </span>
+        </button>
+
+        <button class="nav-btn" data-tab="jobs">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-text">
+            <strong>Find Real Jobs & Match</strong>
+            <small>Live API + URL/JD Analyzer</small>
+          </span>
+        </button>
+
+        <button class="nav-btn" data-tab="tracker">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">
+            <strong>Application CRM</strong>
+            <small>Pipeline & 1-Click Pitch</small>
+          </span>
+          <span class="nav-badge" id="navTrackerBadge">3</span>
+        </button>
+      </nav>
+
+      <!-- Bottom Account & Persona Actions -->
+      <div class="sidebar-footer">
+        <label class="preset-label" for="personaSelect">Load Role Template</label>
+        <select id="personaSelect" class="input-select input-sm">
+          <option value="pm">Product & AI Lead Template</option>
+          <option value="eng">Full-Stack Eng Template</option>
+          <option value="mkt">Growth Marketing Template</option>
+        </select>
+        <div class="footer-btn-row">
+          <button id="exportDataBtn" class="btn btn-ghost btn-sm" title="Download backup JSON">Export JSON</button>
+          <button id="logoutBtn" class="btn btn-secondary btn-sm" title="Sign out of account">Log Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar no-print">
+        <div>
+          <h2 class="page-heading" id="activeTabTitle">🧭 Career Compass & North Star</h2>
+          <p class="page-subheading" id="activeTabDesc">Define your target roles, compensation floor, and skill priorities—every module adapts automatically.</p>
+        </div>
+        <div class="topbar-actions">
+          <!-- Opt-In Public Sharing Status Bar -->
+          <div class="public-toggle-pill">
+            <label class="switch-label" title="Only make your Infographic public if you explicitly turn this on">
+              <input type="checkbox" id="globalPublicOptInToggle" />
+              <span id="globalPublicToggleText">🔒 Private Profile (Click to allow public link)</span>
+            </label>
+            <button class="btn btn-ghost btn-sm hidden" id="copyPublicUrlBtn">🔗 Copy Public Link</button>
+          </div>
+          <div class="pill-stat">
+            <span>Target Floor:</span>
+            <strong id="topbarSalary">$175k+</strong>
+          </div>
+          <button class="btn btn-primary" id="quickJumpJobsBtn">Find Matching Jobs →</button>
+        </div>
+      </header>
+
+      <!-- ============================================================== -->
+      <!-- TAB 1: CAREER COMPASS                                          -->
+      <!-- ============================================================== -->
+      <section class="tab-panel active" id="tab-compass">
+        <div class="grid-2col">
+          <!-- Left: Candidate Identity & North Star Goals -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>1. Candidate Identity & Career North Star</h3>
+                <p>Your core profile and what you want next in your career.</p>
+              </div>
+              <span class="tag tag-accent">Saved to Your Account</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="inpName">Full Name</label>
+                <input type="text" id="inpName" class="input-field" placeholder="e.g. Alex Jordan" />
+              </div>
+              <div class="form-group">
+                <label for="inpHeadline">Current / Target Headline</label>
+                <input type="text" id="inpHeadline" class="input-field" placeholder="e.g. Staff Product Manager — AI & SaaS" />
+              </div>
+              <div class="form-group">
+                <label for="inpLocation">Location & Timezone</label>
+                <input type="text" id="inpLocation" class="input-field" placeholder="e.g. Austin, TX (Open to Remote)" />
+              </div>
+              <div class="form-group">
+                <label for="inpYearsExp">Years of Experience</label>
+                <input type="number" id="inpYearsExp" class="input-field" min="0" max="50" />
+              </div>
+              <div class="form-group full-width">
+                <label for="inpMission">Personal Career North Star Statement (1–2 sentences)</label>
+                <textarea id="inpMission" class="input-field" rows="2" placeholder="What impact do you want to make in your next role?"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="inpTargetRoles">Target Job Titles (comma-separated)</label>
+                <input type="text" id="inpTargetRoles" class="input-field" placeholder="Staff Product Manager, Principal PM, Head of Product" />
+              </div>
+              <div class="form-group">
+                <label for="inpIndustries">Target Industries (comma-separated)</label>
+                <input type="text" id="inpIndustries" class="input-field" placeholder="AI/ML, B2B SaaS, FinTech, Developer Tools" />
+              </div>
+              <div class="form-group">
+                <label for="inpMinSalary">Target Base Salary ($ USD)</label>
+                <input type="number" id="inpMinSalary" class="input-field" step="5000" />
+              </div>
+              <div class="form-group">
+                <label for="inpWorkStyle">Preferred Work Arrangement</label>
+                <select id="inpWorkStyle" class="input-select">
+                  <option value="Remote">Remote First</option>
+                  <option value="Hybrid">Hybrid (2-3 days/wk)</option>
+                  <option value="Remote / Hybrid">Remote or Hybrid</option>
+                  <option value="On-site">On-site</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Career Values & Trajectory Roadmap -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>2. Dealbreakers, Priorities & 3-Horizon Roadmap</h3>
+                <p>Clarify what matters most so you evaluate offers objectively.</p>
+              </div>
+            </div>
+
+            <div class="priority-sliders" id="prioritySliders"></div>
+
+            <hr class="divider" />
+
+            <h4 class="section-subhead">3-Horizon Career Trajectory</h4>
+            <div class="horizon-list">
+              <div class="horizon-item">
+                <span class="horizon-badge h1">Next 6–12 Mos</span>
+                <input type="text" id="inpHorizon1" class="input-field" placeholder="Immediate next role & 90-day win" />
+              </div>
+              <div class="horizon-item">
+                <span class="horizon-badge h2">Year 2–3</span>
+                <input type="text" id="inpHorizon2" class="input-field" placeholder="Scope expansion / team leadership milestone" />
+              </div>
+              <div class="horizon-item">
+                <span class="horizon-badge h3">Year 5+ Vision</span>
+                <input type="text" id="inpHorizon3" class="input-field" placeholder="Long-term executive or founder goal" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Skills Gap & Market Demand Matrix -->
+        <div class="card mt-20">
+          <div class="card-header">
+            <div>
+              <h3>3. Skills Inventory & Target Role Gap Analysis</h3>
+              <p>Compare your current skill proficiency against market requirements for your target roles. Add or adjust skills below.</p>
+            </div>
+            <div class="inline-form">
+              <input type="text" id="newSkillName" class="input-field input-sm" placeholder="Add skill (e.g. System Design)" />
+              <select id="newSkillLevel" class="input-select input-sm">
+                <option value="95">Expert (95%)</option>
+                <option value="80" selected>Advanced (80%)</option>
+                <option value="60">Intermediate (60%)</option>
+                <option value="40">Learning / Gap (40%)</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" id="addSkillBtn">+ Add Skill</button>
+            </div>
+          </div>
+
+          <div class="skills-matrix-grid" id="skillsMatrixContainer"></div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 2: RESUME EVALUATION & OPTIMIZATION STUDIO                 -->
+      <!-- ============================================================== -->
+      <section class="tab-panel" id="tab-resume">
+        <div class="scorecard-grid" id="resumeScorecard"></div>
+
+        <div class="grid-2col mt-20">
+          <!-- Left: Master Resume Editor + Raw Upload/Paste -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Master Resume Content & Parser</h3>
+                <p>Edit your structured experience or upload/paste a plain-text resume to evaluate immediately.</p>
+              </div>
+              <div class="header-btn-group">
+                <label class="btn btn-secondary btn-sm file-upload-label">
+                  📂 Upload .txt/.md
+                  <input type="file" id="resumeFileUpload" accept=".txt,.md,.json" hidden />
+                </label>
+                <button class="btn btn-primary btn-sm" id="runAuditBtn">⚡ Re-Run Full Audit</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inpSummary">Executive Summary</label>
+              <textarea id="inpSummary" class="input-field" rows="3"></textarea>
+            </div>
+
+            <div class="experience-editor-header">
+              <h4>Experience & Quantified Achievements</h4>
+              <button class="btn btn-ghost btn-sm" id="addRoleBtn">+ Add Role</button>
+            </div>
+            <div id="experienceListEditor" class="experience-editor-list"></div>
+
+            <details class="raw-paste-drawer mt-16">
+              <summary>📋 Have raw resume text? Paste & Parse into Resume Studio</summary>
+              <div class="drawer-body">
+                <textarea id="rawResumePaste" class="input-field" rows="6" placeholder="Paste your full resume text here and click 'Import & Evaluate'..."></textarea>
+                <button class="btn btn-secondary btn-sm mt-8" id="importRawResumeBtn">Import & Evaluate Text</button>
+              </div>
+            </details>
+          </div>
+
+          <!-- Right: Diagnostic Findings & Interactive XYZ Bullet Optimizer -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Diagnostic Report & Bullet Optimizer</h3>
+                <p>Actionable fixes to boost ATS pass rates, quantification, and impact.</p>
+              </div>
+              <span class="tag tag-success" id="auditStatusTag">Live Evaluation</span>
+            </div>
+
+            <div class="diagnostics-list" id="resumeDiagnosticsList"></div>
+
+            <hr class="divider" />
+
+            <div class="optimizer-box">
+              <div class="optimizer-header">
+                <h4>✨ Interactive Bullet Point Optimizer (Google XYZ Formula)</h4>
+                <p>Accomplished <strong>[X]</strong> as measured by <strong>[Y]</strong>, by doing <strong>[Z]</strong>. Click any weak or unquantified bullet below—or type your own—to upgrade it.</p>
+              </div>
+
+              <div class="form-group mt-12">
+                <label for="bulletInput">Bullet to Optimize</label>
+                <textarea id="bulletInput" class="input-field" rows="2" placeholder="e.g. Responsible for managing product roadmap and working with engineering to launch new onboarding flow."></textarea>
+              </div>
+              <div class="optimizer-actions">
+                <button class="btn btn-primary btn-sm" id="generateBulletBtn">✨ Generate 3 High-Impact Rewrites</button>
+                <span class="optimizer-hint">Or click a flagged bullet from your resume below:</span>
+              </div>
+
+              <div id="flaggedBulletsList" class="flagged-bullets-list"></div>
+              <div id="bulletSuggestionsOutput" class="bullet-suggestions"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 3: CANDIDATE INFOGRAPHIC STUDIO + OPT-IN PRIVACY BAR       -->
+      <!-- ============================================================== -->
+      <section class="tab-panel" id="tab-infographic">
+        <!-- Explicit Public Facing Opt-In Control Banner -->
+        <div class="card mb-20 no-print" style="border-color: rgba(99, 102, 241, 0.35);">
+          <div class="infographic-toolbar">
+            <div>
+              <h3>🌐 Public-Facing Visibility Control (Opt-In Only)</h3>
+              <p id="infographicPrivacyDescription">
+                Your Candidate Infographic is currently <strong>Private</strong>. Turn on Public Visibility below if you want a shareable link that recruiters or hiring managers can view without logging in.
+              </p>
+            </div>
+            <div class="inline-form" style="flex-wrap:wrap;">
+              <div class="control-item">
+                <label for="publicHandleInput">Your Public Handle</label>
+                <input type="text" id="publicHandleInput" class="input-field input-sm" placeholder="alex-jordan" style="width:160px;" />
+              </div>
+              <label class="optin-toggle-box">
+                <input type="checkbox" id="infographicPublicCheckbox" />
+                <span>Make My Infographic Public-Facing</span>
+              </label>
+              <a id="openPublicPageBtn" href="#" target="_blank" class="btn btn-primary btn-sm hidden">↗ Preview Public Page</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="infographic-toolbar card no-print">
+          <div class="toolbar-left">
+            <h3>🎨 Candidate Infographic Customizer</h3>
+            <p>A shareable 1-page visual portfolio generated directly from your Career Compass & Resume.</p>
+          </div>
+          <div class="toolbar-controls">
+            <div class="control-item">
+              <label for="infoThemeSelect">Visual Theme</label>
+              <select id="infoThemeSelect" class="input-select input-sm">
+                <option value="executive">Executive Midnight (Dark Indigo)</option>
+                <option value="editorial">Editorial Paper (Warm Minimal)</option>
+                <option value="emerald">Venture Emerald (Modern Tech)</option>
+              </select>
+            </div>
+            <div class="control-item">
+              <label for="infoTaglineInput">Custom Pitch Badge</label>
+              <input type="text" id="infoTaglineInput" class="input-field input-sm" value="Available for Staff / Principal Roles" />
+            </div>
+            <button class="btn btn-secondary btn-sm" id="editMetricsBtn">✏️ Edit Top 4 Metrics</button>
+            <button class="btn btn-primary btn-sm" id="printInfographicBtn">🖨️ Print / Save as PDF</button>
+          </div>
+        </div>
+
+        <!-- Optional Metric Editor Drawer -->
+        <div class="card mt-16 hidden no-print" id="metricsEditorCard">
+          <h4>Customize Highlight KPI Callouts</h4>
+          <div class="grid-4col mt-12" id="metricsInputsContainer"></div>
+        </div>
+
+        <!-- THE RENDERED INFOGRAPHIC CANVAS (Print-Ready 1-Pager) -->
+        <div class="infographic-stage mt-20">
+          <article class="infographic-canvas theme-executive" id="infographicCanvas"></article>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 4: FIND REAL JOBS & MATCH ANALYZER                         -->
+      <!-- ============================================================== -->
+      <section class="tab-panel" id="tab-jobs">
+        <div class="grid-jobs-layout">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>🌐 Live Job Search & Match Scoring</h3>
+                <p>Pulls live remote postings via Remotive API + curated high-signal roles, scored automatically against your profile.</p>
+              </div>
+              <span class="tag tag-accent" id="jobFeedSourceBadge">Live Feed Ready</span>
+            </div>
+
+            <div class="job-search-bar">
+              <input type="text" id="jobSearchInput" class="input-field" placeholder="Search role, skill, or keyword (e.g. Product Manager, React, AI)..." />
+              <select id="jobCategorySelect" class="input-select" style="max-width: 190px;">
+                <option value="">All Categories</option>
+                <option value="product">Product</option>
+                <option value="software-dev">Software Dev</option>
+                <option value="data">Data & AI</option>
+                <option value="marketing">Marketing</option>
+                <option value="design">Design</option>
+              </select>
+              <button class="btn btn-primary" id="searchLiveJobsBtn">Search Live Jobs</button>
+            </div>
+
+            <div class="deep-board-links" id="deepBoardLinksBar"></div>
+            <div class="jobs-feed-list" id="jobsFeedContainer"></div>
+          </div>
+
+          <div class="card sticky-panel">
+            <div class="card-header">
+              <div>
+                <h3>🎯 Instant Job URL / JD Match Analyzer</h3>
+                <p>Found a job on LinkedIn, Greenhouse, or Lever? Paste the URL or job description to inspect your exact fit.</p>
+              </div>
+            </div>
+
+            <div class="url-fetch-row">
+              <input type="url" id="pasteJobUrlInput" class="input-field input-sm" placeholder="https://boards.greenhouse.io/... or job URL" />
+              <button class="btn btn-secondary btn-sm" id="fetchJobUrlBtn">Fetch URL</button>
+            </div>
+
+            <div class="form-grid mt-12">
+              <div class="form-group">
+                <label for="anJobTitle">Role Title</label>
+                <input type="text" id="anJobTitle" class="input-field input-sm" placeholder="e.g. Principal Product Manager, AI" />
+              </div>
+              <div class="form-group">
+                <label for="anJobCompany">Company</label>
+                <input type="text" id="anJobCompany" class="input-field input-sm" placeholder="e.g. Anthropic / Stripe" />
+              </div>
+            </div>
+
+            <div class="form-group mt-8">
+              <label for="anJobDesc">Job Description Text</label>
+              <textarea id="anJobDesc" class="input-field" rows="6" placeholder="Paste the full job requirements and responsibilities here, or click 'Deep Match Analysis' on any job card on the left..."></textarea>
+            </div>
+
+            <div class="analyzer-btn-row">
+              <button class="btn btn-primary" id="analyzeJdBtn">⚡ Run Deep Match Analysis</button>
+              <button class="btn btn-secondary" id="saveAnalyzedJobBtn">+ Save to Application CRM</button>
+            </div>
+
+            <div id="jdAnalysisResult" class="jd-analysis-result mt-16"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 5: APPLICATION CRM & TAILORING ENGINE                      -->
+      <!-- ============================================================== -->
+      <section class="tab-panel" id="tab-tracker">
+        <div class="card mb-20">
+          <div class="card-header">
+            <div>
+              <h3>📋 Job Application Pipeline & 1-Click Tailoring Studio</h3>
+              <p>Move roles across stages and generate a custom-tailored Cover Letter, Hiring Manager Outreach Note, and Resume Tweak for any saved job.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="addCustomJobModalBtn">+ Add Opportunity</button>
+          </div>
+
+          <div class="kanban-board" id="kanbanBoard"></div>
+        </div>
+
+        <div class="card" id="tailoringStudioCard">
+          <div class="card-header">
+            <div>
+              <h3>✍️ Tailored Application & Outreach Generator</h3>
+              <p>Select any opportunity in your pipeline above (or choose below) to generate personalized application assets using your Resume & Career Compass.</p>
+            </div>
+            <div class="inline-form">
+              <select id="tailorJobSelect" class="input-select input-sm"></select>
+              <button class="btn btn-primary btn-sm" id="generateTailoredAssetsBtn">✨ Generate Tailored Kit</button>
+            </div>
+          </div>
+
+          <div class="tailor-output-grid" id="tailorOutputContainer"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

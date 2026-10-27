@@ -322,11 +322,64 @@ const WEAK_PHRASES = [
   "duties included", "participated in", "tasked with"
 ];
 
-// Global App & Auth State
+// Global App & Auth State (Hybrid: Local Server API + GitHub Pages Static Fallback)
+const LOCAL_USERS_KEY = "optitrajectory_users_v1";
+const LOCAL_SESSION_KEY = "optitrajectory_session_email_v1";
 let currentUser = null; // { id, email, username, fullName, isPublic }
 let state = loadState();
 let currentJobsFeed = [...CURATED_REAL_JOBS];
 let saveDebounceTimer = null;
+
+function getLocalUsersMap() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || "{}");
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveLocalUsersMap(map) {
+  try {
+    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(map));
+  } catch (e) {}
+}
+
+function encodePublicPayload(profileObj) {
+  try {
+    const safe = {
+      name: profileObj.name,
+      headline: profileObj.headline,
+      location: profileObj.location,
+      yearsExp: profileObj.yearsExp,
+      workStyle: profileObj.workStyle,
+      mission: profileObj.mission,
+      summary: profileObj.summary,
+      targetRoles: profileObj.targetRoles,
+      industries: profileObj.industries,
+      minSalary: profileObj.minSalary,
+      metrics: profileObj.metrics,
+      skills: profileObj.skills,
+      experience: (profileObj.experience || []).slice(0, 3),
+      infographicTheme: profileObj.infographicTheme,
+      infographicTagline: profileObj.infographicTagline
+    };
+    return btoa(unescape(encodeURIComponent(JSON.stringify(safe))));
+  } catch (e) {
+    return "";
+  }
+}
+
+function decodePublicPayload(b64) {
+  try {
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  } catch (e) {
+    return null;
+  }
+}
+
+function getBaseAppUrl() {
+  return window.location.origin + window.location.pathname.replace(/index\.html$/, "");
+}
 
 function loadState() {
   try {
@@ -348,8 +401,21 @@ function saveState(opts = {}) {
   }
   syncGlobalUI();
 
-  // Persist to authenticated user's database record
   if (currentUser) {
+    // Also persist to local users map for GitHub Pages static mode
+    const usersMap = getLocalUsersMap();
+    const key = (currentUser.email || "").toLowerCase();
+    if (key) {
+      if (typeof opts.isPublic === "boolean") currentUser.isPublic = opts.isPublic;
+      if (opts.username) currentUser.username = opts.username.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      usersMap[key] = {
+        ...(usersMap[key] || {}),
+        user: currentUser,
+        profile: state
+      };
+      saveLocalUsersMap(usersMap);
+    }
+
     clearTimeout(saveDebounceTimer);
     saveDebounceTimer = setTimeout(async () => {
       try {
@@ -361,14 +427,16 @@ function saveState(opts = {}) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-        const data = await resp.json();
-        if (data.ok && data.user) {
-          currentUser = data.user;
-          syncPrivacyUI();
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.ok && data.user) {
+            currentUser = data.user;
+          }
         }
       } catch (err) {
-        console.warn("Could not sync profile to server:", err);
+        // Running on GitHub Pages static mode — already saved in localStorage
       }
+      syncPrivacyUI();
     }, opts.immediate ? 10 : 350);
   }
 }
@@ -376,7 +444,10 @@ function saveState(opts = {}) {
 function syncPrivacyUI() {
   if (!currentUser) return;
   const isPub = Boolean(currentUser.isPublic);
-  const publicUrl = `${window.location.origin}/?u=${encodeURIComponent(currentUser.username)}`;
+  const baseUrl = getBaseAppUrl();
+  const encodedShare = isPub ? `&p=${encodeURIComponent(encodePublicPayload(state))}` : "";
+  const publicUrl = `${baseUrl}?u=${encodeURIComponent(currentUser.username)}${encodedShare}`;
+  const shortDisplayUrl = `${baseUrl}?u=${encodeURIComponent(currentUser.username)}`;
 
   const sidebarBadge = document.getElementById("sidebarPrivacyBadge");
   if (sidebarBadge) {
@@ -390,7 +461,7 @@ function syncPrivacyUI() {
   if (topToggle) topToggle.checked = isPub;
   if (topText) {
     topText.textContent = isPub
-      ? `🌐 Public Portfolio Live (/u/${currentUser.username})`
+      ? `🌐 Public Portfolio Live (?u=${currentUser.username})`
       : "🔒 Private Profile (Opt-In to Share)";
   }
   if (copyBtn) {
@@ -417,7 +488,7 @@ function syncPrivacyUI() {
   }
   if (descEl) {
     descEl.innerHTML = isPub
-      ? `✅ <strong>Public-Facing Enabled:</strong> Anyone with your link (<a href="${publicUrl}" target="_blank" style="color:#6ee7b7">${publicUrl}</a>) can view your 1-page Infographic. Your Job CRM & Resume Studio remain private.`
+      ? `✅ <strong>Public-Facing Enabled:</strong> Anyone with your link (<a href="${publicUrl}" target="_blank" style="color:#6ee7b7">${escapeHtml(shortDisplayUrl)}</a>) can view your 1-page Infographic. Your Job CRM & Resume Studio remain private.`
       : `🔒 <strong>Currently Private:</strong> Nobody can view your profile externally. Check <em>"Make My Infographic Public-Facing"</em> to enable your shareable link.`;
   }
 }
@@ -1147,22 +1218,58 @@ async function fetchLiveJobs(query, category) {
   const badge = document.getElementById("jobFeedSourceBadge");
   badge.textContent = "Searching Live API...";
 
+  // 1. Try local backend proxy first
   try {
     const resp = await fetch(
       `/api/jobs?q=${encodeURIComponent(query || "")}&category=${encodeURIComponent(category || "")}`
     );
-    const data = await resp.json();
-    if (data.ok && Array.isArray(data.jobs) && data.jobs.length > 0) {
-      currentJobsFeed = [...data.jobs, ...CURATED_REAL_JOBS];
-      badge.textContent = `Live Remotive API (${data.jobs.length} live + curated)`;
-      renderJobsFeedList(currentJobsFeed);
-      return;
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.ok && Array.isArray(data.jobs) && data.jobs.length > 0) {
+        currentJobsFeed = [...data.jobs, ...CURATED_REAL_JOBS];
+        badge.textContent = `Live Remotive API (${data.jobs.length} live + curated)`;
+        renderJobsFeedList(currentJobsFeed);
+        return;
+      }
     }
   } catch (err) {
-    console.warn("Live job fetch fallback:", err);
+    // Fallback to direct Remotive CORS API (for GitHub Pages static mode)
   }
 
-  // Filter curated jobs locally if API returned empty for a very specific query
+  // 2. Try direct Remotive public CORS API (works directly in browser on GitHub Pages)
+  try {
+    const params = new URLSearchParams({ limit: "20" });
+    if (query) params.set("search", query);
+    if (category) params.set("category", category);
+    const directResp = await fetch(`https://remotive.com/api/remote-jobs?${params.toString()}`);
+    if (directResp.ok) {
+      const rawData = await directResp.json();
+      const liveItems = (rawData.jobs || []).slice(0, 20).map((item) => ({
+        id: `remotive-${item.id}`,
+        title: item.title || "",
+        company: item.company_name || "",
+        location: item.candidate_required_location || "Remote",
+        salary: item.salary || "Competitive (Not Disclosed)",
+        type: (item.job_type || "full_time").replace(/_/g, " "),
+        category: item.category || "General",
+        url: item.url || "",
+        publishedAt: (item.publication_date || "").slice(0, 10),
+        tags: (item.tags || []).slice(0, 8),
+        description: String(item.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 2500),
+        source: "Remotive Live API"
+      }));
+      if (liveItems.length > 0) {
+        currentJobsFeed = [...liveItems, ...CURATED_REAL_JOBS];
+        badge.textContent = `Live Remotive API (${liveItems.length} live + curated)`;
+        renderJobsFeedList(currentJobsFeed);
+        return;
+      }
+    }
+  } catch (err2) {
+    console.warn("Direct Remotive API fallback:", err2);
+  }
+
+  // 3. Filter curated jobs locally if offline or specific query
   const qLower = (query || "").toLowerCase();
   const filtered = CURATED_REAL_JOBS.filter(
     (j) =>
@@ -1515,8 +1622,24 @@ function showAuthError(msg) {
   }
 }
 
+async function hashPasswordClient(password) {
+  try {
+    const msgUint8 = new TextEncoder().encode("optitrajectory_salt_" + password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  } catch (e) {
+    return btoa(password);
+  }
+}
+
 function enterAuthenticatedApp(user, profileData) {
   currentUser = user;
+  try {
+    localStorage.setItem(LOCAL_SESSION_KEY, (user.email || "").toLowerCase());
+  } catch (e) {}
+
   if (profileData && Object.keys(profileData).length > 0) {
     state = profileData;
   } else {
@@ -1536,6 +1659,7 @@ function enterAuthenticatedApp(user, profileData) {
 async function checkPublicProfileRoute() {
   const params = new URLSearchParams(window.location.search);
   let publicHandle = params.get("u");
+  const encodedPayload = params.get("p");
   if (!publicHandle && window.location.pathname.startsWith("/u/")) {
     publicHandle = decodeURIComponent(window.location.pathname.slice(3));
   }
@@ -1547,33 +1671,57 @@ async function checkPublicProfileRoute() {
   const viewerContent = document.getElementById("publicViewerContent");
   viewerShell.classList.remove("hidden");
 
+  let resolvedProfile = null;
+
+  // 1. Try server API first
   try {
     const resp = await fetch(`/api/public/${encodeURIComponent(publicHandle)}`);
-    const data = await resp.json();
-    if (!data.ok || !data.profile) {
-      viewerContent.innerHTML = `
-        <div class="card" style="max-width:560px; text-align:center; padding:36px;">
-          <h2 style="margin-bottom:10px;">🔒 Profile is Private</h2>
-          <p style="color:#94a3b8; font-size:0.92rem; margin-bottom:20px;">
-            ${escapeHtml(data.error || "This candidate has not enabled public-facing visibility for their profile.")}
-          </p>
-          <a href="/" class="btn btn-primary">Go to OptiTrajectoryAI Login →</a>
-        </div>
-      `;
-      return true;
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.ok && data.profile) {
+        resolvedProfile = data.profile;
+      }
     }
-
-    // Render the candidate's opted-in public Infographic
-    state = data.profile;
-    const tempArticle = document.createElement("article");
-    tempArticle.id = "infographicCanvas";
-    tempArticle.className = `infographic-canvas theme-${state.infographicTheme || "executive"}`;
-    viewerContent.innerHTML = "";
-    viewerContent.appendChild(tempArticle);
-    renderInfographicCanvasOnly();
   } catch (err) {
-    viewerContent.innerHTML = `<div class="card">Could not load public profile.</div>`;
+    // Static mode fallback
   }
+
+  // 2. Fallback to LocalUsersMap (if viewing on same browser) or signed ?p= payload (if shared on GitHub Pages)
+  if (!resolvedProfile) {
+    const usersMap = getLocalUsersMap();
+    const matchEntry = Object.values(usersMap).find(
+      (entry) =>
+        entry.user &&
+        (entry.user.username || "").toLowerCase() === publicHandle.toLowerCase() &&
+        Boolean(entry.user.isPublic)
+    );
+    if (matchEntry && matchEntry.profile) {
+      resolvedProfile = matchEntry.profile;
+    } else if (encodedPayload) {
+      resolvedProfile = decodePublicPayload(encodedPayload);
+    }
+  }
+
+  if (!resolvedProfile) {
+    viewerContent.innerHTML = `
+      <div class="card" style="max-width:560px; text-align:center; padding:36px;">
+        <h2 style="margin-bottom:10px;">🔒 Profile is Private</h2>
+        <p style="color:#94a3b8; font-size:0.92rem; margin-bottom:20px;">
+          This candidate profile is private or has not enabled public-facing visibility.
+        </p>
+        <a href="./" class="btn btn-primary">Go to OptiTrajectoryAI Login →</a>
+      </div>
+    `;
+    return true;
+  }
+
+  state = resolvedProfile;
+  const tempArticle = document.createElement("article");
+  tempArticle.id = "infographicCanvas";
+  tempArticle.className = `infographic-canvas theme-${state.infographicTheme || "executive"}`;
+  viewerContent.innerHTML = "";
+  viewerContent.appendChild(tempArticle);
+  renderInfographicCanvasOnly();
   return true;
 }
 
@@ -1607,70 +1755,122 @@ document.addEventListener("DOMContentLoaded", async () => {
   loginForm.onsubmit = async (e) => {
     e.preventDefault();
     showAuthError("");
-    const email = document.getElementById("loginEmail").value.trim();
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
     const password = document.getElementById("loginPassword").value;
+
+    // Try server API first
     try {
       const resp = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
-      const data = await resp.json();
-      if (!data.ok) {
-        showAuthError(data.error || "Login failed.");
+      if (resp.ok || resp.status === 401) {
+        const data = await resp.json();
+        if (!data.ok) {
+          showAuthError(data.error || "Invalid email or password.");
+          return;
+        }
+        enterAuthenticatedApp(data.user, data.profile);
         return;
       }
-      enterAuthenticatedApp(data.user, data.profile);
     } catch (err) {
-      showAuthError("Network error while logging in.");
+      // Static GitHub Pages fallback below
     }
+
+    // Client-side static auth fallback (GitHub Pages)
+    const usersMap = getLocalUsersMap();
+    const record = usersMap[email];
+    const pwHash = await hashPasswordClient(password);
+    if (!record || record.passwordHash !== pwHash) {
+      showAuthError("Invalid email or password. (If you haven't created an account on this browser yet, click 'Create Account').");
+      return;
+    }
+    enterAuthenticatedApp(record.user, record.profile);
   };
 
   registerForm.onsubmit = async (e) => {
     e.preventDefault();
     showAuthError("");
     const fullName = document.getElementById("regName").value.trim();
-    const username = document.getElementById("regUsername").value.trim();
-    const email = document.getElementById("regEmail").value.trim();
+    const rawUsername = document.getElementById("regUsername").value.trim();
+    const email = document.getElementById("regEmail").value.trim().toLowerCase();
     const password = document.getElementById("regPassword").value;
     const starterKey = document.getElementById("regStarterTemplate").value || "pm";
     const starterProfile = JSON.parse(JSON.stringify(PERSONA_PRESETS[starterKey] || PERSONA_PRESETS.pm));
     starterProfile.name = fullName;
 
+    // Try server API first
     try {
       const resp = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName,
-          username,
+          username: rawUsername,
           email,
           password,
           profile: starterProfile
         })
       });
-      const data = await resp.json();
-      if (!data.ok) {
-        showAuthError(data.error || "Could not create account.");
+      if (resp.ok || resp.status === 400 || resp.status === 409) {
+        const data = await resp.json();
+        if (!data.ok) {
+          showAuthError(data.error || "Could not create account.");
+          return;
+        }
+        enterAuthenticatedApp(data.user, data.profile);
         return;
       }
-      enterAuthenticatedApp(data.user, data.profile);
     } catch (err) {
-      showAuthError("Network error while creating account.");
+      // Static GitHub Pages fallback below
     }
+
+    // Client-side static registration fallback (GitHub Pages)
+    const usersMap = getLocalUsersMap();
+    if (usersMap[email]) {
+      showAuthError("An account with that email already exists. Please Log In.");
+      return;
+    }
+    const cleanHandle = (rawUsername || fullName || email.split("@")[0])
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "-")
+      .replace(/-+/g, "-")
+      .slice(0, 28);
+    const pwHash = await hashPasswordClient(password);
+    const newUser = {
+      id: Date.now(),
+      email,
+      username: cleanHandle || "candidate",
+      fullName,
+      isPublic: false // Strictly private by default!
+    };
+    usersMap[email] = {
+      user: newUser,
+      passwordHash: pwHash,
+      profile: starterProfile
+    };
+    saveLocalUsersMap(usersMap);
+    enterAuthenticatedApp(newUser, starterProfile);
   };
 
-  // Instant 1-Click Demo Account Login
+  // Instant 1-Click Demo Account Login (Works on both Server & GitHub Pages)
   document.getElementById("quickDemoAccountBtn").onclick = async () => {
     const demoEmail = "alex.jordan@demo.careeros.app";
     const demoPass = "careeros-demo";
-    let resp = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: demoEmail, password: demoPass })
-    });
-    let data = await resp.json();
-    if (!data.ok) {
+    try {
+      let resp = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: demoEmail, password: demoPass })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.ok) {
+          enterAuthenticatedApp(data.user, data.profile);
+          return;
+        }
+      }
       resp = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1682,16 +1882,43 @@ document.addEventListener("DOMContentLoaded", async () => {
           profile: PERSONA_PRESETS.pm
         })
       });
-      data = await resp.json();
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.ok) {
+          enterAuthenticatedApp(data.user, data.profile);
+          return;
+        }
+      }
+    } catch (err) {
+      // Static GitHub Pages fallback
     }
-    if (data.ok) {
-      enterAuthenticatedApp(data.user, data.profile);
+
+    const usersMap = getLocalUsersMap();
+    if (!usersMap[demoEmail]) {
+      usersMap[demoEmail] = {
+        user: {
+          id: 1,
+          email: demoEmail,
+          username: "alex-jordan",
+          fullName: "Alex Jordan",
+          isPublic: false
+        },
+        passwordHash: await hashPasswordClient(demoPass),
+        profile: JSON.parse(JSON.stringify(PERSONA_PRESETS.pm))
+      };
+      saveLocalUsersMap(usersMap);
     }
+    enterAuthenticatedApp(usersMap[demoEmail].user, usersMap[demoEmail].profile);
   };
 
   // Log Out Button
   document.getElementById("logoutBtn").onclick = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    try {
+      localStorage.removeItem(LOCAL_SESSION_KEY);
+    } catch (e) {}
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {}
     currentUser = null;
     document.getElementById("appShell").classList.add("hidden");
     document.getElementById("authWall").classList.remove("hidden");
@@ -1911,7 +2138,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (job) generateTailoredKit(job);
   };
 
-  // 3. Check if already logged in via session cookie
+  // 3. Check if already logged in via session cookie or static browser session
   try {
     const meResp = await fetch("/api/auth/me");
     if (meResp.ok) {
@@ -1922,8 +2149,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
   } catch (e) {
-    console.warn("Session check failed:", e);
+    // Static mode fallback
   }
+
+  try {
+    const savedEmail = localStorage.getItem(LOCAL_SESSION_KEY);
+    if (savedEmail) {
+      const usersMap = getLocalUsersMap();
+      if (usersMap[savedEmail]) {
+        enterAuthenticatedApp(usersMap[savedEmail].user, usersMap[savedEmail].profile);
+        return;
+      }
+    }
+  } catch (e) {}
 });
 
 function parseRawResumeTextIntoState(rawText) {
