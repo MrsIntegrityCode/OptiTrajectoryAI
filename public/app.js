@@ -361,7 +361,8 @@ function encodePublicPayload(profileObj) {
       skills: profileObj.skills,
       experience: (profileObj.experience || []).slice(0, 3),
       infographicTheme: profileObj.infographicTheme,
-      infographicTagline: profileObj.infographicTagline
+      infographicTagline: profileObj.infographicTagline,
+      headshotDataUrl: profileObj.headshotDataUrl || ""
     };
     return btoa(unescape(encodeURIComponent(JSON.stringify(safe))));
   } catch (e) {
@@ -548,6 +549,68 @@ function switchTab(tabId) {
   if (tabId === "tracker") renderTrackerModule();
 }
 
+function detectIndustryThemeFromProfile(industriesStr, rolesStr) {
+  const combined = `${industriesStr || ""} ${rolesStr || ""}`.toLowerCase();
+  if (/(health|medical|clinical|nurse|pharma|biotech|hospital|patient)/.test(combined)) {
+    return "healthcare";
+  }
+  if (/(design|brand|creative|editorial|media|agency|art|luxury)/.test(combined)) {
+    return "creative";
+  }
+  if (/(consult|advisory|deloitte|mckinsey|bain|bcg|pwc|ey|kpmg|finance|banking|pe|strategy|operations)/.test(combined)) {
+    return "deloitte";
+  }
+  if (/(tech|software|ai|ml|saas|cloud|data|engineer|developer|product|cyber|microsoft)/.test(combined)) {
+    return "microsoft";
+  }
+  return "deloitte";
+}
+
+function processAndStoreHeadshotFile(file, onDone) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const size = 260;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      // Center-crop square
+      const minDim = Math.min(img.width, img.height);
+      const sx = (img.width - minDim) / 2;
+      const sy = (img.height - minDim) / 2;
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.84);
+      state.headshotDataUrl = dataUrl;
+      saveState({ immediate: true });
+      updateHeadshotPreviews();
+      if (onDone) onDone(dataUrl);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateHeadshotPreviews() {
+  const wizPrev = document.getElementById("wizHeadshotPreview");
+  const clearBtn = document.getElementById("wizClearHeadshotBtn");
+  const sidebarAv = document.getElementById("sidebarAvatar");
+
+  if (state.headshotDataUrl) {
+    if (wizPrev) wizPrev.innerHTML = `<img src="${state.headshotDataUrl}" alt="Candidate Headshot" />`;
+    if (clearBtn) clearBtn.classList.remove("hidden");
+    if (sidebarAv) {
+      sidebarAv.innerHTML = `<img src="${state.headshotDataUrl}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    }
+  } else {
+    if (wizPrev) wizPrev.textContent = "📸";
+    if (clearBtn) clearBtn.classList.add("hidden");
+    if (sidebarAv) sidebarAv.textContent = getInitials(state.name);
+  }
+}
+
 function getInitials(name) {
   return (name || "AJ")
     .split(" ")
@@ -562,7 +625,7 @@ function syncGlobalUI() {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
-  setTxt("sidebarAvatar", getInitials(state.name));
+  updateHeadshotPreviews();
   setTxt("sidebarName", state.name || "Candidate");
   setTxt("sidebarRole", state.headline || "Target Role");
   setTxt("topbarSalary", "$" + Math.round((Number(state.minSalary) || 150000) / 1000) + "k+");
@@ -663,6 +726,9 @@ function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
   state.location = location;
   state.industries = industries;
   state.infographicTagline = `Available for ${primaryRole} Roles`;
+
+  // Auto-select industry-calibrated infographic theme (Deloitte / Microsoft / Healthcare / Creative)
+  state.infographicTheme = detectIndustryThemeFromProfile(industries, roles);
 
   // Auto-generate 3-Horizon Trajectory in the background
   state.horizons = {
@@ -1383,16 +1449,34 @@ function downloadAtsWordDoc() {
 }
 
 // ============================================================================
-// MODULE 3: CANDIDATE INFOGRAPHIC STUDIO
+// MODULE 3: ENTERPRISE CANDIDATE INFOGRAPHIC STUDIO (DELOITTE / MICROSOFT)
 // ============================================================================
+const INDUSTRY_THEME_LABELS = {
+  deloitte: "Deloitte Consulting Advisory One-Pager (Calibrated for Strategy, Consulting, Finance & Operations)",
+  microsoft: "Microsoft Fluent Executive Profile (Calibrated for Technology, Engineering, Product & AI)",
+  healthcare: "Clinical & Life Sciences Executive Brief (Calibrated for Healthcare, Biotech & Nursing)",
+  creative: "Executive Editorial Brand Sheet (Calibrated for Marketing, Media & Design Leadership)"
+};
+
+function getNormalizedInfographicTheme() {
+  const valid = ["deloitte", "microsoft", "healthcare", "creative"];
+  if (valid.includes(state.infographicTheme)) return state.infographicTheme;
+  return detectIndustryThemeFromProfile(state.industries, state.targetRoles);
+}
+
 function renderInfographic() {
+  const activeTheme = getNormalizedInfographicTheme();
+  state.infographicTheme = activeTheme;
+
   const themeSelect = document.getElementById("infoThemeSelect");
   const taglineInp = document.getElementById("infoTaglineInput");
-  themeSelect.value = state.infographicTheme || "executive";
-  taglineInp.value = state.infographicTagline || "Available for Next Leadership Role";
+  if (themeSelect) themeSelect.value = activeTheme;
+  if (taglineInp) taglineInp.value = state.infographicTagline || "Available for Next Leadership Role";
 
-  const canvas = document.getElementById("infographicCanvas");
-  canvas.className = `infographic-canvas theme-${state.infographicTheme || "executive"}`;
+  const statusText = document.getElementById("industryAutoStatusText");
+  if (statusText) {
+    statusText.textContent = INDUSTRY_THEME_LABELS[activeTheme] || INDUSTRY_THEME_LABELS.deloitte;
+  }
 
   const metrics = state.metrics || [
     { num: "10+ Yrs", label: "Domain Experience" },
@@ -1403,112 +1487,123 @@ function renderInfographic() {
 
   // Render KPI editor inputs
   const kpiEditor = document.getElementById("metricsInputsContainer");
-  kpiEditor.innerHTML = metrics
-    .map(
-      (m, idx) => `
-      <div class="form-group">
-        <label>KPI #${idx + 1} Value & Label</label>
-        <input type="text" class="input-field input-sm kpi-num-inp" data-idx="${idx}" value="${escapeHtml(m.num)}" />
-        <input type="text" class="input-field input-sm kpi-lbl-inp mt-8" data-idx="${idx}" value="${escapeHtml(m.label)}" />
-      </div>
-    `
-    )
-    .join("");
+  if (kpiEditor) {
+    kpiEditor.innerHTML = metrics
+      .map(
+        (m, idx) => `
+        <div class="form-group">
+          <label>KPI #${idx + 1} Value & Label</label>
+          <input type="text" class="input-field input-sm kpi-num-inp" data-idx="${idx}" value="${escapeHtml(m.num)}" />
+          <input type="text" class="input-field input-sm kpi-lbl-inp mt-8" data-idx="${idx}" value="${escapeHtml(m.label)}" />
+        </div>
+      `
+      )
+      .join("");
 
-  kpiEditor.querySelectorAll(".kpi-num-inp, .kpi-lbl-inp").forEach((inp) => {
-    inp.oninput = () => {
-      const i = Number(inp.dataset.idx);
-      const numVal = kpiEditor.querySelector(`.kpi-num-inp[data-idx="${i}"]`).value;
-      const lblVal = kpiEditor.querySelector(`.kpi-lbl-inp[data-idx="${i}"]`).value;
-      state.metrics[i] = { num: numVal, label: lblVal };
-      saveState();
-      renderInfographicCanvasOnly();
-    };
-  });
+    kpiEditor.querySelectorAll(".kpi-num-inp, .kpi-lbl-inp").forEach((inp) => {
+      inp.oninput = () => {
+        const i = Number(inp.dataset.idx);
+        const numVal = kpiEditor.querySelector(`.kpi-num-inp[data-idx="${i}"]`).value;
+        const lblVal = kpiEditor.querySelector(`.kpi-lbl-inp[data-idx="${i}"]`).value;
+        state.metrics[i] = { num: numVal, label: lblVal };
+        saveState();
+        renderInfographicCanvasOnly();
+      };
+    });
+  }
 
   renderInfographicCanvasOnly();
 }
 
 function renderInfographicCanvasOnly() {
   const canvas = document.getElementById("infographicCanvas");
-  canvas.className = `infographic-canvas theme-${state.infographicTheme || "executive"}`;
+  if (!canvas) return;
+  const activeTheme = getNormalizedInfographicTheme();
+  canvas.className = `infographic-canvas corp-sheet theme-${activeTheme}`;
+
+  const statusText = document.getElementById("industryAutoStatusText");
+  if (statusText) {
+    statusText.textContent = INDUSTRY_THEME_LABELS[activeTheme] || INDUSTRY_THEME_LABELS.deloitte;
+  }
 
   const metrics = state.metrics || [];
   const skills = (state.skills || []).slice(0, 6);
   const roles = (state.experience || []).slice(0, 3);
-  const targetRolesList = (state.targetRoles || "")
+  const targetRolesList = (state.targetRoles || state.headline || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
     .slice(0, 4);
 
+  const industryList = (state.industries || "Enterprise, Technology, Strategy")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+
+  const avatarHtml = state.headshotDataUrl
+    ? `<img src="${state.headshotDataUrl}" alt="${escapeHtml(state.name)} Headshot" />`
+    : `<span>${escapeHtml(getInitials(state.name))}</span>`;
+
+  const practiceLabel =
+    activeTheme === "deloitte"
+      ? "EXECUTIVE ADVISORY & LEADERSHIP PROFILE"
+      : activeTheme === "microsoft"
+      ? "CLOUD, AI & PRODUCT LEADERSHIP PROFILE"
+      : activeTheme === "healthcare"
+      ? "CLINICAL & HEALTHCARE LEADERSHIP BRIEF"
+      : "EXECUTIVE BRAND & GROWTH PORTFOLIO";
+
   canvas.innerHTML = `
-    <div class="info-header">
-      <div class="info-identity">
-        <div class="info-avatar-lg">${escapeHtml(getInitials(state.name))}</div>
+    <!-- Top Corporate Header Banner (Deloitte / Microsoft Style) -->
+    <header class="corp-banner">
+      <div class="corp-banner-left">
+        <div class="corp-headshot">${avatarHtml}</div>
         <div>
-          <h2 class="info-name">${escapeHtml(state.name)}</h2>
-          <div class="info-headline">${escapeHtml(state.headline)}</div>
-          <div class="info-subtext">
-            📍 ${escapeHtml(state.location)} &nbsp;•&nbsp; 💼 ${state.yearsExp || 8}+ Years Experience &nbsp;•&nbsp; 🎯 Preferred: ${escapeHtml(state.workStyle)}
+          <div class="corp-practice-label">${practiceLabel}</div>
+          <h2 class="corp-name">${escapeHtml(state.name)}<span class="corp-green-dot">.</span></h2>
+          <div class="corp-headline">${escapeHtml(state.headline)}</div>
+          <div class="corp-meta-line">
+            📍 ${escapeHtml(state.location)} &nbsp;|&nbsp; 💼 ${escapeHtml(state.yearsExp || 8)}+ Yrs Experience &nbsp;|&nbsp; 🎯 ${escapeHtml(state.workStyle)} &nbsp;|&nbsp; ✉️ ${escapeHtml(state.contactEmail || (currentUser && currentUser.email) || "")}
           </div>
         </div>
       </div>
-      <div class="info-badge-pill">${escapeHtml(state.infographicTagline || "Open to Opportunities")}</div>
-    </div>
+      <div class="corp-badge-box">
+        <span class="corp-avail-pill">${escapeHtml(state.infographicTagline || "Open to Opportunities")}</span>
+        <span style="font-size:0.74rem; opacity:0.8;">Target Floor: $${Math.round((Number(state.minSalary) || 150000) / 1000)}k+ Base</span>
+      </div>
+    </header>
 
-    <!-- 4 Highlight KPI Cards -->
-    <div class="info-kpi-row">
+    <!-- 4-Column Executive KPI Strip -->
+    <section class="corp-kpi-strip">
       ${metrics
         .map(
           (m) => `
-          <div class="info-kpi-card">
-            <div class="info-kpi-num">${escapeHtml(m.num)}</div>
-            <div class="info-kpi-label">${escapeHtml(m.label)}</div>
+          <div class="corp-kpi-cell">
+            <div class="corp-kpi-val">${escapeHtml(m.num)}<span>+</span></div>
+            <div class="corp-kpi-lbl">${escapeHtml(m.label)}</div>
           </div>
         `
         )
         .join("")}
-    </div>
+    </section>
 
-    <div class="info-body-grid">
-      <!-- Left Column: Executive Pitch & Career Timeline -->
-      <div>
-        <div class="info-box">
-          <h4>🧭 Career North Star & Value Proposition</h4>
-          <p style="font-size: 0.88rem; line-height: 1.55;">${escapeHtml(state.mission || state.summary)}</p>
-        </div>
-
-        <div class="info-box">
-          <h4>🚀 Career Track Record & Key Wins</h4>
-          ${roles
-            .map(
-              (r) => `
-              <div class="info-timeline-item">
-                <div class="info-timeline-role">${escapeHtml(r.role)} — <span style="color:#818cf8">${escapeHtml(r.company)}</span></div>
-                <div class="info-timeline-meta">${escapeHtml(r.period)}</div>
-                <div class="info-timeline-win">• ${escapeHtml((r.bullets && r.bullets[0]) || "Delivered high-impact outcomes across core initiatives.")}</div>
-              </div>
-            `
-            )
-            .join("")}
-        </div>
-      </div>
-
-      <!-- Right Column: Core Competencies & Next Role Fit -->
-      <div>
-        <div class="info-box">
-          <h4>⚡ Core Competencies & Proficiency</h4>
+    <!-- 2-Column Consulting & Enterprise Grid -->
+    <div class="corp-body-grid">
+      <!-- Left Sidebar: Core Capabilities, Industry Alignment, Education -->
+      <aside class="corp-left-col">
+        <div>
+          <h4 class="corp-sec-title">Core Capabilities & Matrix</h4>
           ${skills
             .map(
               (s) => `
-              <div class="info-skill-bar-row">
-                <div class="info-skill-bar-top">
+              <div class="corp-skill-item">
+                <div class="corp-skill-top">
                   <span>${escapeHtml(s.name)}</span>
                   <span>${s.level}%</span>
                 </div>
-                <div class="progress-track">
-                  <div class="progress-fill" style="width:${s.level}%"></div>
+                <div class="corp-skill-track">
+                  <div class="corp-skill-fill" style="width:${s.level}%"></div>
                 </div>
               </div>
             `
@@ -1516,20 +1611,63 @@ function renderInfographicCanvasOnly() {
             .join("")}
         </div>
 
-        <div class="info-box">
-          <h4>🎯 Ideal Next Role & Domains</h4>
-          <div style="margin-bottom: 10px;">
-            <div style="font-size:0.75rem; opacity:0.75; margin-bottom:5px;">TARGET ROLES</div>
-            <div style="display:flex; flex-wrap:wrap; gap:6px;">
-              ${targetRolesList.map((tr) => `<span class="tag tag-accent">${escapeHtml(tr)}</span>`).join("")}
-            </div>
+        <div>
+          <h4 class="corp-sec-title">Target Roles & Practice Areas</h4>
+          <div class="corp-pill-list">
+            ${targetRolesList.map((tr) => `<span class="corp-pill">${escapeHtml(tr)}</span>`).join("")}
           </div>
-          <div>
-            <div style="font-size:0.75rem; opacity:0.75; margin-bottom:5px;">TARGET INDUSTRIES & FLOOR</div>
-            <div style="font-size:0.84rem; font-weight:600;">
-              ${escapeHtml(state.industries)} &nbsp;|&nbsp; $${Math.round((Number(state.minSalary) || 160000) / 1000)}k+ Base
-            </div>
+        </div>
+
+        <div>
+          <h4 class="corp-sec-title">Industry Standards & Sectors</h4>
+          <div class="corp-pill-list">
+            ${industryList.map((ind) => `<span class="corp-pill">${escapeHtml(ind)}</span>`).join("")}
           </div>
+        </div>
+
+        <div>
+          <h4 class="corp-sec-title">Education & Credentials</h4>
+          <p style="font-size:0.78rem; color:#374151; line-height:1.45;">
+            ${escapeHtml(state.educationText || "B.S. / Executive Leadership Credentials")}
+          </p>
+        </div>
+      </aside>
+
+      <!-- Right Main Column: Executive Value Proposition & Selected Engagement Experience -->
+      <div class="corp-right-col">
+        <div>
+          <h4 class="corp-sec-title">Executive Value Proposition & Career North Star</h4>
+          <div class="corp-summary-box">
+            <strong>Career Objective:</strong> ${escapeHtml(state.mission || state.summary)}
+          </div>
+          ${
+            state.summary && state.summary !== state.mission
+              ? `<p style="font-size:0.82rem; color:#374151; margin-top:8px; line-height:1.5;">${escapeHtml(state.summary)}</p>`
+              : ""
+          }
+        </div>
+
+        <div>
+          <h4 class="corp-sec-title">Selected Experience & Quantified Impact</h4>
+          ${roles
+            .map(
+              (r) => `
+              <div class="corp-exp-card">
+                <div class="corp-exp-header">
+                  <span class="corp-exp-role">${escapeHtml(r.role)}</span>
+                  <span class="corp-exp-period">${escapeHtml(r.period)}</span>
+                </div>
+                <div class="corp-exp-company">${escapeHtml(r.company)}</div>
+                <ul class="corp-exp-bullets">
+                  ${(r.bullets || [])
+                    .slice(0, 3)
+                    .map((b) => `<li>${escapeHtml(b)}</li>`)
+                    .join("")}
+                </ul>
+              </div>
+            `
+            )
+            .join("")}
         </div>
       </div>
     </div>
@@ -2383,6 +2521,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     reader.readAsText(file);
   };
 
+  const wizHeadshotInput = document.getElementById("wizHeadshotFileInput");
+  if (wizHeadshotInput) {
+    wizHeadshotInput.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        processAndStoreHeadshotFile(file);
+      }
+    };
+  }
+
+  const wizClearHeadshotBtn = document.getElementById("wizClearHeadshotBtn");
+  if (wizClearHeadshotBtn) {
+    wizClearHeadshotBtn.onclick = () => {
+      state.headshotDataUrl = "";
+      saveState({ immediate: true });
+      updateHeadshotPreviews();
+      renderInfographicCanvasOnly();
+    };
+  }
+
   document.getElementById("wizFillSampleResumeBtn").onclick = () => {
     const sample = PERSONA_PRESETS.pm;
     const sampleText = [
@@ -2502,6 +2660,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   // Infographic Controls
+  const infoHeadshotInp = document.getElementById("infoHeadshotInput");
+  if (infoHeadshotInp) {
+    infoHeadshotInp.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        processAndStoreHeadshotFile(file, () => {
+          renderInfographicCanvasOnly();
+        });
+      }
+    };
+  }
+
   document.getElementById("infoThemeSelect").onchange = (e) => {
     state.infographicTheme = e.target.value;
     saveState();

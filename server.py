@@ -243,8 +243,9 @@ class CareerOSHandler(SimpleHTTPRequestHandler):
                 "metrics": profile.get("metrics", []),
                 "skills": profile.get("skills", []),
                 "experience": profile.get("experience", []),
-                "infographicTheme": profile.get("infographicTheme", "executive"),
-                "infographicTagline": profile.get("infographicTagline", "Open to Opportunities")
+                "infographicTheme": profile.get("infographicTheme", "deloitte"),
+                "infographicTagline": profile.get("infographicTagline", "Open to Opportunities"),
+                "headshotDataUrl": profile.get("headshotDataUrl", "")
             }
             self.send_json(200, {
                 "ok": True,
