@@ -505,6 +505,10 @@ const TAB_META = {
     title: "📄 Resume Evaluation & Optimization Studio",
     desc: "Multi-dimensional ATS & impact scoring, gap detection against your Career Compass, and 1-click XYZ bullet rewrites."
   },
+  ats: {
+    title: "📑 ATS-Formatted Resume & Cover Letter Builder",
+    desc: "Machine-parseable single-column Resume & Cover Letter engineered for Workday, Greenhouse, and Lever—export to PDF, Word (.doc), or Plain Text."
+  },
   infographic: {
     title: "🎨 Candidate Infographic Studio (1-Page Visual Bio)",
     desc: "Auto-generated executive visual portfolio ready to print to PDF or attach to hiring manager outreach."
@@ -532,6 +536,7 @@ function switchTab(tabId) {
     document.getElementById("activeTabDesc").textContent = meta.desc;
   }
   if (tabId === "resume") renderResumeStudio();
+  if (tabId === "ats") renderAtsBuilder();
   if (tabId === "infographic") renderInfographic();
   if (tabId === "jobs") renderJobsModule();
   if (tabId === "tracker") renderTrackerModule();
@@ -991,6 +996,277 @@ function generateXYZRewrites(rawBullet, rIdx = null, bIdx = null) {
       btn.textContent = "Copied!";
     };
   });
+}
+
+// ============================================================================
+// MODULE 2B: ATS-FORMATTED RESUME & COVER LETTER BUILDER
+// ============================================================================
+function getSelectedAtsTargetJob() {
+  const sel = document.getElementById("atsTargetJobSelect");
+  const val = sel ? sel.value : "general";
+  if (val && val !== "general") {
+    const found = (state.savedJobs || []).find((j) => j.id === val);
+    if (found) return found;
+  }
+  const primaryTitle = ((state.targetRoles || state.headline || "Target Role").split(",")[0] || "").trim();
+  return {
+    id: "general",
+    title: primaryTitle,
+    company: "Hiring Organization",
+    location: state.workStyle || "Remote",
+    description: `${state.targetRoles || ""} ${state.industries || ""}`
+  };
+}
+
+function renderAtsBuilder() {
+  // Populate contact/education defaults if empty
+  const emailInp = document.getElementById("atsEmailInput");
+  const phoneInp = document.getElementById("atsPhoneInput");
+  const linkInp = document.getElementById("atsLinkedinInput");
+  const eduInp = document.getElementById("atsEducationInput");
+
+  if (!state.contactEmail) {
+    state.contactEmail = (currentUser && currentUser.email) || "alex.jordan@email.com";
+  }
+  if (!state.contactPhone) {
+    state.contactPhone = "(512) 555-0194";
+  }
+  if (!state.contactLinkedin) {
+    const slug = (state.name || "candidate").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    state.contactLinkedin = `linkedin.com/in/${slug}`;
+  }
+  if (!state.educationText) {
+    state.educationText = "B.S. in Computer Science & Business Administration | Certified Product & AI Leader";
+  }
+
+  emailInp.value = state.contactEmail;
+  phoneInp.value = state.contactPhone;
+  linkInp.value = state.contactLinkedin;
+  eduInp.value = state.educationText;
+
+  const bindMeta = (el, key) => {
+    el.oninput = () => {
+      state[key] = el.value;
+      saveState();
+      renderAtsSheetsOnly();
+    };
+  };
+  bindMeta(emailInp, "contactEmail");
+  bindMeta(phoneInp, "contactPhone");
+  bindMeta(linkInp, "contactLinkedin");
+  bindMeta(eduInp, "educationText");
+
+  // Populate Target Job Selector
+  const jobSelect = document.getElementById("atsTargetJobSelect");
+  const prevVal = jobSelect.value;
+  const jobs = state.savedJobs || [];
+  jobSelect.innerHTML =
+    `<option value="general">General Career Compass Target (${escapeHtml(((state.targetRoles || state.headline).split(",")[0] || "").trim())})</option>` +
+    jobs
+      .map(
+        (j) =>
+          `<option value="${escapeHtml(j.id)}">Tailored: ${escapeHtml(j.title)} @ ${escapeHtml(j.company)}</option>`
+      )
+      .join("");
+  if (prevVal && [...jobSelect.options].some((o) => o.value === prevVal)) {
+    jobSelect.value = prevVal;
+  }
+
+  renderAtsSheetsOnly();
+}
+
+function buildAtsResumeHtml(job, fontClass) {
+  const skillsList = (state.skills || []).map((s) => s.name);
+  const kpiSummary = (state.metrics || [])
+    .map((m) => `${m.num} ${m.label}`)
+    .join(" • ");
+
+  const tailoredHeadline =
+    job && job.id !== "general"
+      ? `${job.title} | ${state.headline}`
+      : state.headline;
+
+  const tailoredSummary =
+    job && job.id !== "general"
+      ? `${state.summary} Proven alignment with ${job.company}'s priorities across ${skillsList.slice(0, 4).join(", ")}.`
+      : state.summary;
+
+  return `
+    <article class="ats-paper ${fontClass}" id="atsResumePaper">
+      <header class="ats-doc-header">
+        <div class="ats-doc-name">${escapeHtml(state.name)}</div>
+        <div class="ats-doc-headline">${escapeHtml(tailoredHeadline)}</div>
+        <div class="ats-doc-contact">
+          ${escapeHtml(state.location)} &nbsp;|&nbsp; ${escapeHtml(state.contactPhone)} &nbsp;|&nbsp; ${escapeHtml(state.contactEmail)} &nbsp;|&nbsp; ${escapeHtml(state.contactLinkedin)}
+        </div>
+      </header>
+
+      <section class="ats-section">
+        <h4 class="ats-section-title">Professional Summary</h4>
+        <p class="ats-summary-text">${escapeHtml(tailoredSummary)}</p>
+        ${
+          kpiSummary
+            ? `<p class="ats-summary-text" style="margin-top:6px;"><strong>Key Career Highlights:</strong> ${escapeHtml(kpiSummary)}</p>`
+            : ""
+        }
+      </section>
+
+      <section class="ats-section">
+        <h4 class="ats-section-title">Core Competencies & Technical Skills</h4>
+        <div class="ats-skills-line">
+          <strong>Core Competencies:</strong> ${escapeHtml(skillsList.join(" • "))}
+        </div>
+        <div class="ats-skills-line">
+          <strong>Target Domains & Industries:</strong> ${escapeHtml(state.industries || "Enterprise SaaS, AI/ML, Technology")}
+        </div>
+      </section>
+
+      <section class="ats-section">
+        <h4 class="ats-section-title">Professional Experience</h4>
+        ${(state.experience || [])
+          .map(
+            (exp) => `
+            <div class="ats-role-block">
+              <div class="ats-role-header">
+                <span>${escapeHtml(exp.role)} — ${escapeHtml(exp.company)}</span>
+                <span>${escapeHtml(exp.period)}</span>
+              </div>
+              <ul class="ats-role-bullets">
+                ${(exp.bullets || [])
+                  .map((b) => `<li>${escapeHtml(b)}</li>`)
+                  .join("")}
+              </ul>
+            </div>
+          `
+          )
+          .join("")}
+      </section>
+
+      <section class="ats-section" style="margin-bottom:0;">
+        <h4 class="ats-section-title">Education & Certifications</h4>
+        <div class="ats-skills-line">${escapeHtml(state.educationText)}</div>
+      </section>
+    </article>
+  `;
+}
+
+function buildAtsCoverLetterHtml(job, fontClass) {
+  const todayStr = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+  const companyName = job && job.id !== "general" ? job.company : "Hiring Team";
+  const roleTitle = job && job.id !== "general" ? job.title : ((state.targetRoles || state.headline).split(",")[0] || "Target Role").trim();
+  const topSkills = (state.skills || [])
+    .slice(0, 4)
+    .map((s) => s.name)
+    .join(", ");
+
+  const topBullets = [];
+  (state.experience || []).forEach((exp) => {
+    if (exp.bullets && exp.bullets[0] && topBullets.length < 3) {
+      topBullets.push(`${exp.bullets[0]} (${exp.company})`);
+    }
+  });
+
+  return `
+    <article class="ats-paper ${fontClass}" id="atsCoverLetterPaper">
+      <header class="ats-doc-header">
+        <div class="ats-doc-name">${escapeHtml(state.name)}</div>
+        <div class="ats-doc-headline">${escapeHtml(state.headline)}</div>
+        <div class="ats-doc-contact">
+          ${escapeHtml(state.location)} &nbsp;|&nbsp; ${escapeHtml(state.contactPhone)} &nbsp;|&nbsp; ${escapeHtml(state.contactEmail)} &nbsp;|&nbsp; ${escapeHtml(state.contactLinkedin)}
+        </div>
+      </header>
+
+      <div class="ats-cover-body">
+        <p>${escapeHtml(todayStr)}</p>
+        <p>
+          <strong>To: Hiring Manager & Talent Acquisition Team</strong><br />
+          ${escapeHtml(companyName)}<br />
+          <strong>Re: Application for ${escapeHtml(roleTitle)}</strong>
+        </p>
+
+        <p>Dear ${escapeHtml(companyName)} Hiring Team,</p>
+
+        <p>
+          I am writing to submit my application for the <strong>${escapeHtml(roleTitle)}</strong> role. With ${escapeHtml(state.yearsExp || 8)}+ years of experience and a proven track record delivering quantified business outcomes across ${escapeHtml(state.industries || "technology and SaaS")}, I am excited by the opportunity to help ${escapeHtml(companyName)} accelerate its roadmap and execution.
+        </p>
+
+        <p>
+          ${escapeHtml(state.summary)} My career North Star is centered on a clear mission: <em>${escapeHtml(state.mission)}</em>
+        </p>
+
+        <p><strong>Selected Quantified Achievements Relevant to ${escapeHtml(roleTitle)}:</strong></p>
+        <ul class="ats-cover-bullets">
+          ${topBullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}
+          <li><strong>Core Domain Mastery:</strong> Hands-on leadership across ${escapeHtml(topSkills)}.</li>
+        </ul>
+
+        <p>
+          I would welcome the opportunity to discuss how my background and execution framework align with your goals for the ${escapeHtml(roleTitle)} position. Thank you for your time and consideration.
+        </p>
+
+        <p style="margin-top:22px;">
+          Sincerely,<br />
+          <strong>${escapeHtml(state.name)}</strong><br />
+          ${escapeHtml(state.contactEmail)} | ${escapeHtml(state.contactPhone)}
+        </p>
+      </div>
+    </article>
+  `;
+}
+
+function renderAtsSheetsOnly() {
+  const mode = (document.getElementById("atsDocModeSelect") || {}).value || "resume";
+  const font = (document.getElementById("atsFontSelect") || {}).value || "sans";
+  const fontClass = font === "serif" ? "font-serif" : "font-sans";
+  const job = getSelectedAtsTargetJob();
+
+  const stage = document.getElementById("atsStageContainer");
+  if (!stage) return;
+
+  let html = "";
+  if (mode === "resume" || mode === "both") {
+    html += buildAtsResumeHtml(job, fontClass);
+  }
+  if (mode === "cover" || mode === "both") {
+    html += buildAtsCoverLetterHtml(job, fontClass);
+  }
+  stage.innerHTML = html;
+}
+
+function getAtsPlainText() {
+  const stage = document.getElementById("atsStageContainer");
+  return stage ? stage.innerText : "";
+}
+
+function downloadAtsWordDoc() {
+  const stage = document.getElementById("atsStageContainer");
+  if (!stage) return;
+  const mode = (document.getElementById("atsDocModeSelect") || {}).value || "resume";
+  const slug = (state.name || "candidate").toLowerCase().replace(/\s+/g, "-");
+  const filename = `optitrajectoryai-ats-${mode}-${slug}.doc`;
+
+  const wordHtml = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'><title>${escapeHtml(state.name)} - ATS Document</title>
+    <style>
+      body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #000000; line-height: 1.4; }
+      h4 { font-size: 11.5pt; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-top: 14px; margin-bottom: 6px; }
+      ul { margin-top: 4px; margin-bottom: 8px; }
+      li { margin-bottom: 4px; }
+    </style>
+    </head>
+    <body>${stage.innerHTML}</body>
+    </html>
+  `;
+  const blob = new Blob(["\ufeff", wordHtml], { type: "application/msword" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
 }
 
 // ============================================================================
@@ -1479,6 +1755,7 @@ function renderTrackerModule() {
             ${KANBAN_STAGES.map((s) => `<option value="${s}" ${s === job.stage ? "selected" : ""}>${s}</option>`).join("")}
           </select>
           <div style="display:flex; gap:4px;">
+            <button class="btn btn-primary btn-sm ats-doc-this-btn" title="Open ATS Resume & Cover Letter for this role">📑 ATS Docs</button>
             <button class="btn btn-secondary btn-sm tailor-this-btn" title="Generate Tailored Pitch">✍️ Tailor</button>
             <button class="btn btn-ghost btn-sm del-crm-btn" title="Remove">✕</button>
           </div>
@@ -1489,6 +1766,16 @@ function renderTrackerModule() {
         job.stage = e.target.value;
         saveState();
         renderTrackerModule();
+      };
+
+      card.querySelector(".ats-doc-this-btn").onclick = () => {
+        switchTab("ats");
+        const atsSel = document.getElementById("atsTargetJobSelect");
+        if (atsSel) {
+          atsSel.value = job.id;
+          document.getElementById("atsDocModeSelect").value = "both";
+          renderAtsSheetsOnly();
+        }
       };
 
       card.querySelector(".tailor-this-btn").onclick = () => {
@@ -2032,6 +2319,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (raw.trim()) {
       parseRawResumeTextIntoState(raw);
     }
+  };
+
+  // ATS Resume & Cover Letter Controls
+  document.getElementById("atsDocModeSelect").onchange = () => renderAtsSheetsOnly();
+  document.getElementById("atsTargetJobSelect").onchange = () => renderAtsSheetsOnly();
+  document.getElementById("atsFontSelect").onchange = () => renderAtsSheetsOnly();
+
+  document.getElementById("copyAtsTextBtn").onclick = () => {
+    const txt = getAtsPlainText();
+    navigator.clipboard.writeText(txt);
+    const btn = document.getElementById("copyAtsTextBtn");
+    btn.textContent = "✓ Copied ATS Text!";
+    setTimeout(() => (btn.textContent = "📋 Copy Plain Text"), 1800);
+  };
+
+  document.getElementById("downloadAtsDocBtn").onclick = () => {
+    downloadAtsWordDoc();
+  };
+
+  document.getElementById("printAtsPdfBtn").onclick = () => {
+    window.print();
   };
 
   // Infographic Controls

@@ -176,6 +176,14 @@
           <span class="nav-badge" id="navResumeBadge">84</span>
         </button>
 
+        <button class="nav-btn" data-tab="ats">
+          <span class="nav-icon">📑</span>
+          <span class="nav-text">
+            <strong>ATS Resume & Cover Letter</strong>
+            <small>Formatted Docs, PDF & Word Export</small>
+          </span>
+        </button>
+
         <button class="nav-btn" data-tab="infographic">
           <span class="nav-icon">🎨</span>
           <span class="nav-text">
@@ -432,6 +440,77 @@
               <div id="bulletSuggestionsOutput" class="bullet-suggestions"></div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 2B: ATS-FORMATTED RESUME & COVER LETTER BUILDER            -->
+      <!-- ============================================================== -->
+      <section class="tab-panel" id="tab-ats">
+        <div class="card mb-20 no-print">
+          <div class="infographic-toolbar">
+            <div>
+              <h3>📑 ATS-Compliant Resume & Cover Letter Generator</h3>
+              <p>Generates 100% single-column, machine-parseable documents engineered for Workday, Greenhouse, Lever, and Taleo.</p>
+            </div>
+            <div class="toolbar-controls">
+              <div class="control-item">
+                <label for="atsDocModeSelect">Document View</label>
+                <select id="atsDocModeSelect" class="input-select input-sm">
+                  <option value="resume">ATS Formatted Resume</option>
+                  <option value="cover">ATS Formatted Cover Letter</option>
+                  <option value="both">Both (Resume + Cover Letter)</option>
+                </select>
+              </div>
+              <div class="control-item">
+                <label for="atsTargetJobSelect">Tailor to Opportunity</label>
+                <select id="atsTargetJobSelect" class="input-select input-sm"></select>
+              </div>
+              <div class="control-item">
+                <label for="atsFontSelect">Typography</label>
+                <select id="atsFontSelect" class="input-select input-sm">
+                  <option value="sans">Modern ATS Sans (Inter / Calibri)</option>
+                  <option value="serif">Executive Serif (Georgia / Garamond)</option>
+                </select>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="copyAtsTextBtn">📋 Copy Plain Text</button>
+              <button class="btn btn-secondary btn-sm" id="downloadAtsDocBtn">📝 Download Word (.doc)</button>
+              <button class="btn btn-primary btn-sm" id="printAtsPdfBtn">🖨️ Print / Save PDF</button>
+            </div>
+          </div>
+
+          <!-- Contact & Education Metadata Row for ATS Header -->
+          <div class="form-grid mt-16" style="grid-template-columns: repeat(4, 1fr); padding-top:14px; border-top:1px solid var(--border-subtle);">
+            <div class="form-group">
+              <label for="atsEmailInput">Contact Email</label>
+              <input type="text" id="atsEmailInput" class="input-field input-sm" placeholder="alex.jordan@email.com" />
+            </div>
+            <div class="form-group">
+              <label for="atsPhoneInput">Phone Number</label>
+              <input type="text" id="atsPhoneInput" class="input-field input-sm" placeholder="(512) 555-0194" />
+            </div>
+            <div class="form-group">
+              <label for="atsLinkedinInput">LinkedIn / Portfolio URL</label>
+              <input type="text" id="atsLinkedinInput" class="input-field input-sm" placeholder="linkedin.com/in/alex-jordan" />
+            </div>
+            <div class="form-group">
+              <label for="atsEducationInput">Education & Certifications</label>
+              <input type="text" id="atsEducationInput" class="input-field input-sm" placeholder="B.S. Computer Science & MBA | PMP, Pragmatic Certified" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ATS Compliance Verification Strip -->
+        <div class="ats-checklist-bar no-print mb-20">
+          <span class="tag tag-success">✓ Single-Column Layout (Zero Tables/Textboxes)</span>
+          <span class="tag tag-success">✓ Standard ATS Section Headings</span>
+          <span class="tag tag-success">✓ Chronological Date Parsing Ready</span>
+          <span class="tag tag-success">✓ Target Role Keywords Injected</span>
+        </div>
+
+        <!-- Rendered Printable ATS Paper Sheets -->
+        <div class="ats-stage" id="atsStageContainer">
+          <!-- Populated dynamically by JS -->
         </div>
       </section>
 

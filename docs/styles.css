@@ -1477,3 +1477,149 @@ body {
   background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-subtle);
 }
+
+
+/* ================================================================== */
+/* ATS-FORMATTED RESUME & COVER LETTER BUILDER                        */
+/* ================================================================== */
+.ats-checklist-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ats-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.ats-paper {
+  width: 100%;
+  max-width: 850px;
+  background: #ffffff;
+  color: #111827;
+  padding: 52px 60px;
+  border-radius: 6px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  line-height: 1.48;
+  font-size: 10.5pt;
+}
+
+.ats-paper.font-sans {
+  font-family: 'Inter', Calibri, Arial, Helvetica, sans-serif;
+}
+
+.ats-paper.font-serif {
+  font-family: Georgia, 'Times New Roman', Garamond, serif;
+}
+
+.ats-doc-header {
+  text-align: center;
+  border-bottom: 2px solid #111827;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+
+.ats-doc-name {
+  font-size: 20pt;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.ats-doc-headline {
+  font-size: 11.5pt;
+  font-weight: 700;
+  color: #1f2937;
+  margin-top: 2px;
+}
+
+.ats-doc-contact {
+  font-size: 9.5pt;
+  color: #374151;
+  margin-top: 5px;
+}
+
+.ats-section {
+  margin-bottom: 14px;
+}
+
+.ats-section-title {
+  font-size: 11pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #374151;
+  padding-bottom: 3px;
+  margin-bottom: 8px;
+  color: #000000;
+}
+
+.ats-summary-text {
+  font-size: 10pt;
+  color: #111827;
+  text-align: justify;
+}
+
+.ats-skills-line {
+  font-size: 10pt;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.ats-role-block {
+  margin-bottom: 12px;
+}
+
+.ats-role-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 700;
+  font-size: 10.5pt;
+  color: #000000;
+}
+
+.ats-role-bullets {
+  margin: 4px 0 0 18px;
+  padding: 0;
+}
+
+.ats-role-bullets li {
+  margin-bottom: 4px;
+  font-size: 10pt;
+  color: #111827;
+}
+
+.ats-cover-body p {
+  margin-bottom: 12px;
+  font-size: 10.5pt;
+  color: #111827;
+}
+
+.ats-cover-bullets {
+  margin: 8px 0 14px 22px;
+}
+
+.ats-cover-bullets li {
+  margin-bottom: 6px;
+  font-size: 10pt;
+}
+
+@media print {
+  .ats-stage {
+    gap: 0;
+  }
+  .ats-paper {
+    box-shadow: none;
+    padding: 0;
+    max-width: 100%;
+    page-break-after: always;
+  }
+  .ats-paper:last-child {
+    page-break-after: auto;
+  }
+}
