@@ -1013,27 +1013,401 @@ function getCareerFieldTemplateData(careerFieldStr, rolesStr, industriesStr) {
   };
 }
 
+// ============================================================================
+// PROFESSIONAL HEADSHOT STUDIO WIZARD (100% Real-Face Preservation)
+// ============================================================================
+const hsStudioState = {
+  sourceImage: null,
+  segMaskCanvas: null,
+  segmentationReady: false,
+  segmenter: null,
+  webcamStream: null,
+  backdrop: "studio-slate",
+  zoom: 115,
+  tilt: 0,
+  panX: 0,
+  panY: 0,
+  brightness: 105,
+  contrast: 104,
+  warmth: 4,
+  ring: "accent",
+  showGuide: true,
+  isDragging: false,
+  dragStartX: 0,
+  dragStartY: 0
+};
+
+function initSelfieSegmenterIfAvailable() {
+  if (hsStudioState.segmenter || typeof window.SelfieSegmentation === "undefined") {
+    return;
+  }
+  try {
+    const seg = new window.SelfieSegmentation({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+    });
+    seg.setOptions({ modelSelection: 1 });
+    seg.onResults((results) => {
+      if (results && results.segmentationMask) {
+        const maskCan = document.createElement("canvas");
+        maskCan.width = 520;
+        maskCan.height = 520;
+        const mCtx = maskCan.getContext("2d");
+        mCtx.filter = "blur(2.5px)";
+        mCtx.drawImage(results.segmentationMask, 0, 0, 520, 520);
+        mCtx.filter = "none";
+        hsStudioState.segMaskCanvas = maskCan;
+        hsStudioState.segmentationReady = true;
+        const statusEl = document.getElementById("hsAiSegStatus");
+        if (statusEl) {
+          statusEl.textContent = "✓ AI Studio Cutout Active (100% Real Face Preserved)";
+        }
+        renderHeadshotStudioCanvas(false);
+      }
+    });
+    hsStudioState.segmenter = seg;
+  } catch (err) {
+    console.warn("SelfieSegmentation fallback active:", err);
+  }
+}
+
+async function runPersonSegmentationOnSource(imgEl) {
+  hsStudioState.segMaskCanvas = null;
+  hsStudioState.segmentationReady = false;
+  initSelfieSegmenterIfAvailable();
+  if (hsStudioState.segmenter && imgEl) {
+    try {
+      const statusEl = document.getElementById("hsAiSegStatus");
+      if (statusEl) statusEl.textContent = "⏳ Separating background (keeping 100% real face)...";
+      await hsStudioState.segmenter.send({ image: imgEl });
+      return;
+    } catch (e) {
+      console.warn("Segmentation send fallback:", e);
+    }
+  }
+  const statusEl = document.getElementById("hsAiSegStatus");
+  if (statusEl) {
+    statusEl.textContent = "✓ Studio Portrait Framing & Lighting Active (100% Real Face)";
+  }
+  renderHeadshotStudioCanvas(false);
+}
+
+function drawStudioBackdrop(ctx, size, backdropKey) {
+  ctx.save();
+  if (backdropKey === "studio-slate") {
+    const grad = ctx.createRadialGradient(size * 0.5, size * 0.42, size * 0.08, size * 0.5, size * 0.5, size * 0.72);
+    grad.addColorStop(0, "#475569");
+    grad.addColorStop(0.55, "#1e293b");
+    grad.addColorStop(1, "#0f172a");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  } else if (backdropKey === "studio-navy") {
+    const grad = ctx.createRadialGradient(size * 0.5, size * 0.38, size * 0.06, size * 0.5, size * 0.5, size * 0.75);
+    grad.addColorStop(0, "#1d4ed8");
+    grad.addColorStop(0.5, "#1e3a8a");
+    grad.addColorStop(1, "#091536");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  } else if (backdropKey === "studio-office") {
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, "#dbeafe");
+    grad.addColorStop(0.48, "#f1f5f9");
+    grad.addColorStop(1, "#fde68a");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    // Soft architectural bokeh circles
+    ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+    ctx.beginPath();
+    ctx.arc(size * 0.22, size * 0.26, 68, 0, Math.PI * 2);
+    ctx.arc(size * 0.8, size * 0.3, 82, 0, Math.PI * 2);
+    ctx.arc(size * 0.72, size * 0.75, 60, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (backdropKey === "studio-clinical") {
+    const grad = ctx.createRadialGradient(size * 0.5, size * 0.4, size * 0.1, size * 0.5, size * 0.5, size * 0.75);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(0.65, "#ccfbf1");
+    grad.addColorStop(1, "#0f766e");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  } else if (backdropKey === "studio-ivory") {
+    const grad = ctx.createRadialGradient(size * 0.5, size * 0.42, size * 0.1, size * 0.5, size * 0.5, size * 0.75);
+    grad.addColorStop(0, "#fffbeb");
+    grad.addColorStop(0.65, "#f5f5f4");
+    grad.addColorStop(1, "#d6d3d1");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  } else {
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(0, 0, size, size);
+  }
+  ctx.restore();
+}
+
+function drawTransformedSourceImage(targetCtx, img, size, filterStr) {
+  targetCtx.save();
+  if (filterStr) targetCtx.filter = filterStr;
+  targetCtx.translate(size / 2 + hsStudioState.panX, size / 2 + hsStudioState.panY);
+  targetCtx.rotate((hsStudioState.tilt * Math.PI) / 180);
+  const scale = hsStudioState.zoom / 100;
+  targetCtx.scale(scale, scale);
+
+  const minDim = Math.min(img.width, img.height);
+  const drawW = (img.width / minDim) * size;
+  const drawH = (img.height / minDim) * size;
+  targetCtx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+  targetCtx.restore();
+}
+
+function applyWarmthTintToPersonCanvas(personCanvas, warmthVal) {
+  if (!warmthVal || warmthVal === 0) return;
+  const pCtx = personCanvas.getContext("2d");
+  pCtx.save();
+  pCtx.globalCompositeOperation = "source-atop";
+  if (warmthVal > 0) {
+    pCtx.fillStyle = `rgba(251, 146, 60, ${(warmthVal / 25) * 0.09})`;
+  } else {
+    pCtx.fillStyle = `rgba(56, 189, 248, ${(Math.abs(warmthVal) / 25) * 0.09})`;
+  }
+  pCtx.fillRect(0, 0, personCanvas.width, personCanvas.height);
+  pCtx.restore();
+}
+
+function renderHeadshotStudioCanvas(forExport = false) {
+  const canvas = document.getElementById("hsStudioCanvas");
+  if (!canvas) return null;
+  const ctx = canvas.getContext("2d");
+  const size = canvas.width;
+  ctx.clearRect(0, 0, size, size);
+
+  const img = hsStudioState.sourceImage;
+  const bgMode = hsStudioState.backdrop;
+  const lightFilter = `brightness(${hsStudioState.brightness}%) contrast(${hsStudioState.contrast}%) saturate(${100 + Math.round(hsStudioState.warmth * 0.35)}%)`;
+
+  if (!img) {
+    // Draw studio placeholder inviting upload or camera
+    drawStudioBackdrop(ctx, size, bgMode === "orig-clean" || bgMode === "orig-blur" ? "studio-slate" : bgMode);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.14)";
+    ctx.beginPath();
+    ctx.arc(size / 2, size * 0.39, 78, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(size / 2, size * 0.78, 138, 92, 0, Math.PI, 0, false);
+    ctx.fill();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "700 18px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Upload a Casual Photo or Use Camera", size / 2, size * 0.52);
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "500 13px Inter, sans-serif";
+    ctx.fillText("100% of your real face & features stay authentic", size / 2, size * 0.57);
+    return null;
+  }
+
+  // 1. Render Background Layer
+  if (bgMode === "orig-clean") {
+    drawTransformedSourceImage(ctx, img, size, lightFilter);
+    applyWarmthTintToPersonCanvas(canvas, hsStudioState.warmth);
+  } else if (bgMode === "orig-blur") {
+    drawTransformedSourceImage(ctx, img, size, `blur(14px) brightness(${Math.max(85, hsStudioState.brightness - 8)}%)`);
+  } else {
+    drawStudioBackdrop(ctx, size, bgMode);
+  }
+
+  // 2. Render Person Layer if replacing or blurring background
+  if (bgMode !== "orig-clean") {
+    const personLayer = document.createElement("canvas");
+    personLayer.width = size;
+    personLayer.height = size;
+    const pCtx = personLayer.getContext("2d");
+
+    drawTransformedSourceImage(pCtx, img, size, lightFilter);
+    applyWarmthTintToPersonCanvas(personLayer, hsStudioState.warmth);
+
+    if (hsStudioState.segMaskCanvas) {
+      // Transform the AI segmentation mask with the exact same pan/zoom/tilt as the source image
+      const transformedMask = document.createElement("canvas");
+      transformedMask.width = size;
+      transformedMask.height = size;
+      const tmCtx = transformedMask.getContext("2d");
+      drawTransformedSourceImage(tmCtx, hsStudioState.segMaskCanvas, size, "blur(2px)");
+
+      pCtx.globalCompositeOperation = "destination-in";
+      pCtx.drawImage(transformedMask, 0, 0);
+      pCtx.globalCompositeOperation = "source-over";
+    } else if (bgMode !== "orig-blur") {
+      // Feathered Studio Portrait Vignette Mask fallback when offline
+      const fallbackMask = document.createElement("canvas");
+      fallbackMask.width = size;
+      fallbackMask.height = size;
+      const fmCtx = fallbackMask.getContext("2d");
+      const rGrad = fmCtx.createRadialGradient(size * 0.5, size * 0.48, size * 0.25, size * 0.5, size * 0.5, size * 0.49);
+      rGrad.addColorStop(0, "rgba(0,0,0,1)");
+      rGrad.addColorStop(0.78, "rgba(0,0,0,0.96)");
+      rGrad.addColorStop(1, "rgba(0,0,0,0)");
+      fmCtx.fillStyle = rGrad;
+      fmCtx.fillRect(0, 0, size, size);
+
+      pCtx.globalCompositeOperation = "destination-in";
+      pCtx.drawImage(fallbackMask, 0, 0);
+      pCtx.globalCompositeOperation = "source-over";
+    } else {
+      // Soft center focus mask for orig-blur when offline
+      const focusMask = document.createElement("canvas");
+      focusMask.width = size;
+      focusMask.height = size;
+      const fmCtx = focusMask.getContext("2d");
+      const rGrad = fmCtx.createRadialGradient(size * 0.5, size * 0.45, size * 0.18, size * 0.5, size * 0.5, size * 0.44);
+      rGrad.addColorStop(0, "rgba(0,0,0,1)");
+      rGrad.addColorStop(1, "rgba(0,0,0,0)");
+      fmCtx.fillStyle = rGrad;
+      fmCtx.fillRect(0, 0, size, size);
+
+      pCtx.globalCompositeOperation = "destination-in";
+      pCtx.drawImage(focusMask, 0, 0);
+      pCtx.globalCompositeOperation = "source-over";
+    }
+
+    ctx.drawImage(personLayer, 0, 0);
+  }
+
+  // 3. Subtle Studio Rim Vignette
+  const vig = ctx.createRadialGradient(size * 0.5, size * 0.45, size * 0.34, size * 0.5, size * 0.5, size * 0.54);
+  vig.addColorStop(0, "rgba(0,0,0,0)");
+  vig.addColorStop(1, "rgba(0,0,0,0.18)");
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, size, size);
+
+  // 4. Optional Portrait Frame Ring (drawn around circular perimeter)
+  if (hsStudioState.ring !== "none") {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2 - 8, 0, Math.PI * 2);
+    ctx.lineWidth = 10;
+    if (hsStudioState.ring === "white") {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.92)";
+    } else if (hsStudioState.ring === "gold") {
+      ctx.strokeStyle = "#f59e0b";
+    } else {
+      const activeTheme = getNormalizedInfographicTheme();
+      ctx.strokeStyle =
+        activeTheme === "deloitte"
+          ? "#86bc25"
+          : activeTheme === "microsoft"
+          ? "#0078d4"
+          : activeTheme === "healthcare"
+          ? "#0d9488"
+          : "#d97706";
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 5. Head-and-Shoulders Alignment Guide Overlay (Only in live preview, never in saved output)
+  if (!forExport && hsStudioState.showGuide) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.48)";
+    ctx.setLineDash([6, 6]);
+    ctx.lineWidth = 1.6;
+
+    // Head oval guide
+    ctx.beginPath();
+    ctx.ellipse(size / 2, size * 0.38, 86, 108, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Eye line guide
+    ctx.beginPath();
+    ctx.moveTo(size * 0.34, size * 0.35);
+    ctx.lineTo(size * 0.66, size * 0.35);
+    ctx.stroke();
+
+    // Shoulders arc guide
+    ctx.beginPath();
+    ctx.ellipse(size / 2, size * 0.88, 178, 112, 0, Math.PI * 1.12, Math.PI * 1.88, false);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(15, 23, 42, 0.65)";
+    ctx.fillRect(size / 2 - 78, size * 0.14, 156, 22);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "600 11px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Align Head & Eyes Here", size / 2, size * 0.14 + 15);
+    ctx.restore();
+  }
+
+  return canvas.toDataURL("image/jpeg", 0.9);
+}
+
+function loadDataUrlIntoHeadshotStudio(dataUrl) {
+  if (!dataUrl) return;
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    hsStudioState.sourceImage = img;
+    runPersonSegmentationOnSource(img);
+    renderHeadshotStudioCanvas(false);
+  };
+  img.src = dataUrl;
+}
+
+function stopHeadshotWebcam() {
+  if (hsStudioState.webcamStream) {
+    hsStudioState.webcamStream.getTracks().forEach((t) => t.stop());
+    hsStudioState.webcamStream = null;
+  }
+  const vid = document.getElementById("hsWebcamVideo");
+  const snapBtn = document.getElementById("hsCaptureWebcamBtn");
+  if (vid) vid.classList.add("hidden");
+  if (snapBtn) snapBtn.classList.add("hidden");
+}
+
+function openHeadshotStudioModal(initialFile) {
+  const modal = document.getElementById("headshotStudioModal");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+
+  if (initialFile) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      loadDataUrlIntoHeadshotStudio(ev.target.result);
+    };
+    reader.readAsDataURL(initialFile);
+  } else if (!hsStudioState.sourceImage && state.headshotDataUrl) {
+    loadDataUrlIntoHeadshotStudio(state.headshotDataUrl);
+  } else {
+    renderHeadshotStudioCanvas(false);
+  }
+}
+
+function closeHeadshotStudioModal() {
+  stopHeadshotWebcam();
+  const modal = document.getElementById("headshotStudioModal");
+  if (modal) modal.classList.add("hidden");
+}
+
 function processAndStoreHeadshotFile(file, onDone) {
   if (!file) return;
+  // Open the Studio Headshot Wizard with the selected file so the user can frame & studio-enhance it (or save in 1 click)
   const reader = new FileReader();
   reader.onload = (ev) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      const size = 260;
+      const size = 360;
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext("2d");
-      // Center-crop square
       const minDim = Math.min(img.width, img.height);
       const sx = (img.width - minDim) / 2;
       const sy = (img.height - minDim) / 2;
       ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.84);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
       state.headshotDataUrl = dataUrl;
       saveState({ immediate: true });
       updateHeadshotPreviews();
       if (onDone) onDone(dataUrl);
+      // Also load into the studio wizard and open it so they can apply a studio backdrop if desired
+      loadDataUrlIntoHeadshotStudio(ev.target.result);
+      openHeadshotStudioModal();
     };
     img.src = ev.target.result;
   };
@@ -2216,14 +2590,100 @@ function downloadAtsWordDoc() {
 }
 
 // ============================================================================
-// MODULE 3: ENTERPRISE CANDIDATE INFOGRAPHIC STUDIO (DELOITTE / MICROSOFT)
+// MODULE 3: CAREER-FOCUSED 1-PAGE INFOGRAPHIC STUDIO
 // ============================================================================
 const INDUSTRY_THEME_LABELS = {
-  deloitte: "Deloitte Consulting & Corporate One-Pager (Calibrated for Business, Finance, Operations, HR, Sales & Legal)",
-  microsoft: "Microsoft Modern Enterprise Profile (Calibrated for Corporate Management, Project Delivery, Data & Tech)",
-  healthcare: "Healthcare, Education & Public Service Brief (Calibrated for Clinical, Nursing, Teaching & Nonprofit)",
-  creative: "Executive Editorial & Brand Sheet (Calibrated for Marketing, Communications, Media, Design & Hospitality)"
+  deloitte: "Corporate & Advisory Standard (Calibrated for Business, Finance, Operations, HR, Sales & Legal)",
+  microsoft: "Modern Enterprise Standard (Calibrated for Corporate Management, Project Delivery, Data & Tech)",
+  healthcare: "Healthcare, Education & Public Service Standard (Calibrated for Clinical, Nursing, Teaching & Nonprofit)",
+  creative: "Executive Editorial & Brand Standard (Calibrated for Marketing, Communications, Media, Design & Hospitality)"
 };
+
+function getInfographicSectionLabels() {
+  const blob = `${state.careerField || ""} ${state.industries || ""} ${state.targetRoles || ""}`.toLowerCase();
+  if (/health|nurs|clinical|medical|hospital|patient|pharma/.test(blob)) {
+    return {
+      skillsTitle: "Clinical & Operational Competencies",
+      targetsTitle: "Target Clinical / Leadership Roles",
+      educationTitle: "Licensure, Certifications & Degrees",
+      valueTitle: "Clinical Leadership Value & Career North Star",
+      expTitle: "Clinical & Patient Care Impact Highlights"
+    };
+  }
+  if (/educat|teach|school|faculty|academic|curriculum|instruction/.test(blob)) {
+    return {
+      skillsTitle: "Instructional & Leadership Competencies",
+      targetsTitle: "Target Academic / District Roles",
+      educationTitle: "Teaching Licensure, Endorsements & Degrees",
+      valueTitle: "Educational Philosophy & Career North Star",
+      expTitle: "Student Outcomes & Instructional Impact"
+    };
+  }
+  if (/financ|account|cpa|audit|tax|banking|treasury|controller/.test(blob)) {
+    return {
+      skillsTitle: "Financial, Audit & Analytical Mastery",
+      targetsTitle: "Target Finance & Advisory Roles",
+      educationTitle: "Credentials (CPA / CFA / MBA) & Education",
+      valueTitle: "Financial Stewardship & Executive Value",
+      expTitle: "Selected Financial & Operational Impact"
+    };
+  }
+  if (/sales|account exec|business dev|revenue|client|commercial/.test(blob)) {
+    return {
+      skillsTitle: "Revenue, Pipeline & Client Competencies",
+      targetsTitle: "Target Commercial & Leadership Roles",
+      educationTitle: "Education & Sales Methodology Credentials",
+      valueTitle: "Commercial Growth Thesis & Value Proposition",
+      expTitle: "Quota Attainment & Revenue Growth Track Record"
+    };
+  }
+  if (/supply|logistic|manufactur|warehouse|trade|plant|procurement|construction/.test(blob)) {
+    return {
+      skillsTitle: "Operations, Supply Chain & Safety Mastery",
+      targetsTitle: "Target Operations & Leadership Roles",
+      educationTitle: "Certifications (Lean / Six Sigma / OSHA) & Education",
+      valueTitle: "Operational Excellence & Career North Star",
+      expTitle: "Throughput, Cost Savings & Safety Track Record"
+    };
+  }
+  return {
+    skillsTitle: "Core Competencies & Proficiency Matrix",
+    targetsTitle: "Target Positions & Practice Areas",
+    educationTitle: "Education, Licenses & Certifications",
+    valueTitle: "Executive Value Proposition & Career North Star",
+    expTitle: "Selected Experience & Quantified Impact"
+  };
+}
+
+function highlightInfographicNumbers(text) {
+  const safe = escapeHtml(text || "");
+  return safe.replace(
+    /(\$[0-9,.]+[MKBmkb]?\+?|\b[0-9]+(?:\.[0-9]+)?%\+?|\b[0-9]{1,3}(?:,[0-9]{3})+\+?)/g,
+    '<strong class="corp-metric-inline">$1</strong>'
+  );
+}
+
+function buildMiniQrSvg() {
+  return `
+    <svg width="44" height="44" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="36" height="36" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="4" y="4" width="10" height="10" stroke="currentColor" stroke-width="2.2" fill="none"/>
+      <rect x="7" y="7" width="4" height="4" fill="currentColor"/>
+      <rect x="22" y="4" width="10" height="10" stroke="currentColor" stroke-width="2.2" fill="none"/>
+      <rect x="25" y="7" width="4" height="4" fill="currentColor"/>
+      <rect x="4" y="22" width="10" height="10" stroke="currentColor" stroke-width="2.2" fill="none"/>
+      <rect x="7" y="25" width="4" height="4" fill="currentColor"/>
+      <rect x="16" y="6" width="3" height="3" fill="currentColor"/>
+      <rect x="16" y="12" width="3" height="6" fill="currentColor"/>
+      <rect x="6" y="16" width="6" height="3" fill="currentColor"/>
+      <rect x="16" y="20" width="6" height="3" fill="currentColor"/>
+      <rect x="25" y="17" width="6" height="3" fill="currentColor"/>
+      <rect x="22" y="23" width="4" height="4" fill="currentColor"/>
+      <rect x="28" y="25" width="4" height="7" fill="currentColor"/>
+      <rect x="17" y="27" width="4" height="5" fill="currentColor"/>
+    </svg>
+  `;
+}
 
 function getNormalizedInfographicTheme() {
   const valid = ["deloitte", "microsoft", "healthcare", "creative"];
@@ -2293,6 +2753,7 @@ function renderInfographicCanvasOnly() {
     statusText.textContent = INDUSTRY_THEME_LABELS[activeTheme] || INDUSTRY_THEME_LABELS.deloitte;
   }
 
+  const secLabels = getInfographicSectionLabels();
   const metrics = state.metrics || [];
   const skills = (state.skills || []).slice(0, 6);
   const roles = (state.experience || []).slice(0, 3);
@@ -2302,7 +2763,7 @@ function renderInfographicCanvasOnly() {
     .filter(Boolean)
     .slice(0, 4);
 
-  const industryList = (state.industries || "Enterprise, Technology, Strategy")
+  const industryList = (state.industries || state.careerField || "Business & Leadership")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
@@ -2312,23 +2773,24 @@ function renderInfographicCanvasOnly() {
     ? `<img src="${state.headshotDataUrl}" alt="${escapeHtml(state.name)} Headshot" />`
     : `<span>${escapeHtml(getInitials(state.name))}</span>`;
 
-  const sectorHeader = (state.careerField || state.industries || "EXECUTIVE LEADERSHIP").split(",")[0].trim().toUpperCase();
-  const practiceLabel =
-    activeTheme === "deloitte"
-      ? `${sectorHeader} • DELOITTE ADVISORY STANDARD PROFILE`
-      : activeTheme === "microsoft"
-      ? `${sectorHeader} • MICROSOFT ENTERPRISE PROFILE`
-      : activeTheme === "healthcare"
-      ? `${sectorHeader} • CLINICAL, EDUCATION & SERVICE BRIEF`
-      : `${sectorHeader} • EXECUTIVE BRAND & PORTFOLIO`;
+  const sectorHeader = (state.careerField || state.industries || "CAREER LEADERSHIP").split(",")[0].trim().toUpperCase();
+  const practiceLabel = `${sectorHeader} • CAREER-FOCUSED 1-PAGE INFOGRAPHIC`;
+
+  const primaryTarget = targetRolesList[0] || state.headline || "Target Role";
+  const recentRole = (roles[0] && roles[0].role) || state.headline || "Current Role";
+  const earlierRole = (roles[1] && roles[1].role) || "Foundation & Domain Mastery";
+  const topMetric = metrics[1] || metrics[0] || { num: "Proven", label: "Measurable Impact" };
+  const callName = getPreferredCallName();
 
   canvas.innerHTML = `
-    <!-- Top Corporate Header Banner (Deloitte / Microsoft Style) -->
+    <!-- Top Executive Header Banner -->
     <header class="corp-banner">
       <div class="corp-banner-left">
-        <div class="corp-headshot">${avatarHtml}</div>
+        <div class="corp-headshot" id="canvasHeadshotTrigger" title="Click to open Studio Headshot Creator" style="cursor:pointer;">
+          ${avatarHtml}
+        </div>
         <div>
-          <div class="corp-practice-label">${practiceLabel}</div>
+          <div class="corp-practice-label">${escapeHtml(practiceLabel)}</div>
           <h2 class="corp-name">${escapeHtml(state.name)}<span class="corp-green-dot">.</span></h2>
           <div class="corp-headline">${escapeHtml(state.headline)}</div>
           <div class="corp-meta-line">
@@ -2338,7 +2800,7 @@ function renderInfographicCanvasOnly() {
       </div>
       <div class="corp-badge-box">
         <span class="corp-avail-pill">${escapeHtml(state.infographicTagline || "Open to Opportunities")}</span>
-        <span style="font-size:0.74rem; opacity:0.8;">Target Floor: $${Math.round((Number(state.minSalary) || 150000) / 1000)}k+ Base</span>
+        <span style="font-size:0.74rem; opacity:0.86;">${escapeHtml(state.timeline || "Ready for Next Opportunity")} • $${Math.round((Number(state.minSalary) || 105000) / 1000)}k+ Target</span>
       </div>
     </header>
 
@@ -2356,12 +2818,12 @@ function renderInfographicCanvasOnly() {
         .join("")}
     </section>
 
-    <!-- 2-Column Consulting & Enterprise Grid -->
+    <!-- 2-Column Career-Focused Grid -->
     <div class="corp-body-grid">
-      <!-- Left Sidebar: Core Capabilities, Industry Alignment, Education -->
+      <!-- Left Sidebar: Core Capabilities, Target Roles, Screening Fit, Education, QR Badge -->
       <aside class="corp-left-col">
         <div>
-          <h4 class="corp-sec-title">Core Capabilities & Matrix</h4>
+          <h4 class="corp-sec-title">${escapeHtml(secLabels.skillsTitle)}</h4>
           ${skills
             .map(
               (s) => `
@@ -2380,43 +2842,94 @@ function renderInfographicCanvasOnly() {
         </div>
 
         <div>
-          <h4 class="corp-sec-title">Target Roles & Practice Areas</h4>
+          <h4 class="corp-sec-title">${escapeHtml(secLabels.targetsTitle)}</h4>
           <div class="corp-pill-list">
             ${targetRolesList.map((tr) => `<span class="corp-pill">${escapeHtml(tr)}</span>`).join("")}
           </div>
         </div>
 
         <div>
-          <h4 class="corp-sec-title">Industry Standards & Sectors</h4>
-          <div class="corp-pill-list">
+          <h4 class="corp-sec-title">Industry Focus &amp; Parameters</h4>
+          <div class="corp-pill-list" style="margin-bottom:8px;">
             ${industryList.map((ind) => `<span class="corp-pill">${escapeHtml(ind)}</span>`).join("")}
+          </div>
+          <div class="corp-QuickFacts">
+            <div><strong>Schedule:</strong> ${escapeHtml(state.employmentType || "Full-Time")} (${escapeHtml(state.workStyle || "Hybrid / Remote")})</div>
+            ${state.managementScope ? `<div><strong>Scope:</strong> ${escapeHtml(state.managementScope)}</div>` : ""}
+            ${state.orgSize && state.orgSize !== "Open to Any Organization Size" ? `<div><strong>Environment:</strong> ${escapeHtml(state.orgSize)}</div>` : ""}
+            ${state.otherRequirements ? `<div><strong>Key Criteria:</strong> ${escapeHtml(state.otherRequirements)}</div>` : ""}
           </div>
         </div>
 
         <div>
-          <h4 class="corp-sec-title">Education & Credentials</h4>
-          <p style="font-size:0.78rem; color:#374151; line-height:1.45;">
-            ${escapeHtml(state.educationText || "B.S. / Executive Leadership Credentials")}
+          <h4 class="corp-sec-title">${escapeHtml(secLabels.educationTitle)}</h4>
+          <p style="font-size:0.78rem; color:#1f2937; font-weight:600; line-height:1.45;">
+            ${escapeHtml(state.educationText || "B.S. / Professional Licensure & Leadership Credentials")}
           </p>
+        </div>
+
+        <div class="corp-qr-footer">
+          <div style="color:var(--brand-primary); flex-shrink:0;">${buildMiniQrSvg()}</div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:800; color:#111827; text-transform:uppercase;">Verified Career Profile</div>
+            <div style="font-size:0.69rem; color:#4b5563; line-height:1.35;">
+              ATS Resume, Cover Letter &amp; References available upon request.
+            </div>
+          </div>
         </div>
       </aside>
 
-      <!-- Right Main Column: Executive Value Proposition & Selected Engagement Experience -->
+      <!-- Right Main Column: Why Hire Pillar Snapshot, Career Trajectory & Selected Experience -->
       <div class="corp-right-col">
+        <!-- Why Hire 3-Pillar Executive Value Snapshot -->
         <div>
-          <h4 class="corp-sec-title">Executive Value Proposition & Career North Star</h4>
-          <div class="corp-summary-box">
-            <strong>Career Objective:</strong> ${escapeHtml(state.mission || state.summary)}
+          <h4 class="corp-sec-title">Why Hire ${escapeHtml(callName)} — 3-Pillar Executive Value</h4>
+          <div class="corp-pillars-grid">
+            <div class="corp-pillar-card">
+              <div class="corp-pillar-tag">01 • ROLE &amp; SCOPE FIT</div>
+              <div class="corp-pillar-title">Ready for ${escapeHtml(primaryTarget)}</div>
+              <p>${escapeHtml(state.yearsExp || 8)}+ years of progressive domain expertise${state.managementScope ? " (" + escapeHtml(state.managementScope) + ")" : ""} aligned with ${escapeHtml(industryList[0] || "industry")} standards.</p>
+            </div>
+            <div class="corp-pillar-card">
+              <div class="corp-pillar-tag">02 • QUANTIFIED IMPACT</div>
+              <div class="corp-pillar-title">${escapeHtml(topMetric.num)}+ ${escapeHtml(topMetric.label)}</div>
+              <p>Consistent track record of measurable operational, clinical, financial, or program outcomes across high-accountability teams.</p>
+            </div>
+            <div class="corp-pillar-card">
+              <div class="corp-pillar-tag">03 • IMMEDIATE VALUE</div>
+              <div class="corp-pillar-title">${escapeHtml((skills[0] && skills[0].name) || "Strategic Execution")}</div>
+              <p>${escapeHtml(state.mission || state.summary || "").slice(0, 115)}${(state.mission || state.summary || "").length > 115 ? "..." : ""}</p>
+            </div>
           </div>
-          ${
-            state.summary && state.summary !== state.mission
-              ? `<p style="font-size:0.82rem; color:#374151; margin-top:8px; line-height:1.5;">${escapeHtml(state.summary)}</p>`
-              : ""
-          }
+        </div>
+
+        <!-- Visual Career Trajectory Arc -->
+        <div class="corp-trajectory-bar">
+          <div class="corp-traj-node">
+            <span class="corp-traj-lbl">FOUNDATION</span>
+            <strong>${escapeHtml(earlierRole)}</strong>
+          </div>
+          <div class="corp-traj-arrow">➔</div>
+          <div class="corp-traj-node">
+            <span class="corp-traj-lbl">RECENT LEADERSHIP</span>
+            <strong>${escapeHtml(recentRole)}</strong>
+          </div>
+          <div class="corp-traj-arrow">➔</div>
+          <div class="corp-traj-node active-target">
+            <span class="corp-traj-lbl">NEXT TARGET HORIZON</span>
+            <strong>🎯 ${escapeHtml(primaryTarget)}</strong>
+          </div>
         </div>
 
         <div>
-          <h4 class="corp-sec-title">Selected Experience & Quantified Impact</h4>
+          <h4 class="corp-sec-title">${escapeHtml(secLabels.valueTitle)}</h4>
+          <div class="corp-summary-box">
+            <strong>Career Objective:</strong> ${escapeHtml(state.mission || state.summary)}
+          </div>
+        </div>
+
+        <div>
+          <h4 class="corp-sec-title">${escapeHtml(secLabels.expTitle)}</h4>
           ${roles
             .map(
               (r) => `
@@ -2429,7 +2942,7 @@ function renderInfographicCanvasOnly() {
                 <ul class="corp-exp-bullets">
                   ${(r.bullets || [])
                     .slice(0, 3)
-                    .map((b) => `<li>${escapeHtml(b)}</li>`)
+                    .map((b) => `<li>${highlightInfographicNumbers(b)}</li>`)
                     .join("")}
                 </ul>
               </div>
@@ -2440,6 +2953,11 @@ function renderInfographicCanvasOnly() {
       </div>
     </div>
   `;
+
+  const hsTrigger = document.getElementById("canvasHeadshotTrigger");
+  if (hsTrigger) {
+    hsTrigger.onclick = () => openHeadshotStudioModal();
+  }
 }
 
 // ============================================================================
@@ -3402,6 +3920,227 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (file) {
         processAndStoreHeadshotFile(file);
       }
+    };
+  }
+
+  const wizOpenHsBtn = document.getElementById("wizOpenHeadshotStudioBtn");
+  if (wizOpenHsBtn) wizOpenHsBtn.onclick = () => openHeadshotStudioModal();
+
+  const wizHsPrev = document.getElementById("wizHeadshotPreview");
+  if (wizHsPrev) wizHsPrev.onclick = () => openHeadshotStudioModal();
+
+  const infoOpenHsBtn = document.getElementById("infoOpenHeadshotStudioBtn");
+  if (infoOpenHsBtn) infoOpenHsBtn.onclick = () => openHeadshotStudioModal();
+
+  const hsCloseBtn = document.getElementById("hsCloseModalBtn");
+  if (hsCloseBtn) hsCloseBtn.onclick = () => closeHeadshotStudioModal();
+
+  const hsCancelBtn = document.getElementById("hsCancelModalBtn");
+  if (hsCancelBtn) hsCancelBtn.onclick = () => closeHeadshotStudioModal();
+
+  const hsModalFileInp = document.getElementById("hsModalFileInput");
+  if (hsModalFileInp) {
+    hsModalFileInp.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        stopHeadshotWebcam();
+        const reader = new FileReader();
+        reader.onload = (ev) => loadDataUrlIntoHeadshotStudio(ev.target.result);
+        reader.readAsDataURL(file);
+      }
+    };
+  }
+
+  // Webcam Live Capture inside Headshot Studio
+  const hsStartCamBtn = document.getElementById("hsStartWebcamBtn");
+  const hsSnapCamBtn = document.getElementById("hsCaptureWebcamBtn");
+  if (hsStartCamBtn && hsSnapCamBtn) {
+    hsStartCamBtn.onclick = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: "user" },
+          audio: false
+        });
+        hsStudioState.webcamStream = stream;
+        const vid = document.getElementById("hsWebcamVideo");
+        if (vid) {
+          vid.srcObject = stream;
+          vid.classList.remove("hidden");
+        }
+        hsSnapCamBtn.classList.remove("hidden");
+      } catch (err) {
+        alert("Could not access camera. Please allow camera permission or upload a photo file.");
+      }
+    };
+
+    hsSnapCamBtn.onclick = () => {
+      const vid = document.getElementById("hsWebcamVideo");
+      if (!vid || !hsStudioState.webcamStream) return;
+      const snapCan = document.createElement("canvas");
+      const vw = vid.videoWidth || 640;
+      const vh = vid.videoHeight || 640;
+      const sDim = Math.min(vw, vh);
+      snapCan.width = 640;
+      snapCan.height = 640;
+      const sCtx = snapCan.getContext("2d");
+      sCtx.drawImage(vid, (vw - sDim) / 2, (vh - sDim) / 2, sDim, sDim, 0, 0, 640, 640);
+      stopHeadshotWebcam();
+      loadDataUrlIntoHeadshotStudio(snapCan.toDataURL("image/jpeg", 0.92));
+    };
+  }
+
+  // Backdrop Swatches
+  document.querySelectorAll("#hsBackdropGrid .hs-backdrop-btn").forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll("#hsBackdropGrid .hs-backdrop-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      hsStudioState.backdrop = btn.dataset.bg;
+      renderHeadshotStudioCanvas(false);
+    };
+  });
+
+  // Framing & Lighting Sliders
+  const bindStudioSlider = (id, stateKey, labelId, suffix = "") => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.oninput = () => {
+      const val = Number(el.value);
+      hsStudioState[stateKey] = val;
+      const lbl = document.getElementById(labelId);
+      if (lbl) {
+        lbl.textContent = (stateKey === "warmth" && val > 0 ? "+" : "") + val + suffix;
+      }
+      renderHeadshotStudioCanvas(false);
+    };
+  };
+
+  bindStudioSlider("hsZoomSlider", "zoom", "hsZoomVal", "%");
+  bindStudioSlider("hsTiltSlider", "tilt", "hsTiltVal", "°");
+  bindStudioSlider("hsPanXSlider", "panX", "hsPanXVal", "");
+  bindStudioSlider("hsPanYSlider", "panY", "hsPanYVal", "");
+  bindStudioSlider("hsBrightSlider", "brightness", "hsBrightVal", "%");
+  bindStudioSlider("hsContrastSlider", "contrast", "hsContrastVal", "%");
+  bindStudioSlider("hsWarmthSlider", "warmth", "hsWarmthVal", "");
+
+  const hsRingSel = document.getElementById("hsRingSelect");
+  if (hsRingSel) {
+    hsRingSel.onchange = () => {
+      hsStudioState.ring = hsRingSel.value;
+      renderHeadshotStudioCanvas(false);
+    };
+  }
+
+  const hsGuideChk = document.getElementById("hsShowGuideCheckbox");
+  if (hsGuideChk) {
+    hsGuideChk.onchange = () => {
+      hsStudioState.showGuide = hsGuideChk.checked;
+      renderHeadshotStudioCanvas(false);
+    };
+  }
+
+  const hsResetBtn = document.getElementById("hsResetFramingBtn");
+  if (hsResetBtn) {
+    hsResetBtn.onclick = () => {
+      hsStudioState.zoom = 115;
+      hsStudioState.tilt = 0;
+      hsStudioState.panX = 0;
+      hsStudioState.panY = 0;
+      document.getElementById("hsZoomSlider").value = 115;
+      document.getElementById("hsZoomVal").textContent = "115%";
+      document.getElementById("hsTiltSlider").value = 0;
+      document.getElementById("hsTiltVal").textContent = "0°";
+      document.getElementById("hsPanXSlider").value = 0;
+      document.getElementById("hsPanXVal").textContent = "0";
+      document.getElementById("hsPanYSlider").value = 0;
+      document.getElementById("hsPanYVal").textContent = "0";
+      renderHeadshotStudioCanvas(false);
+    };
+  }
+
+  // 1-Click Lighting Presets
+  document.querySelectorAll(".hs-preset-btn").forEach((btn) => {
+    btn.onclick = () => {
+      const p = btn.dataset.preset;
+      if (p === "natural") {
+        hsStudioState.brightness = 105;
+        hsStudioState.contrast = 104;
+        hsStudioState.warmth = 4;
+      } else if (p === "brighten") {
+        hsStudioState.brightness = 118;
+        hsStudioState.contrast = 108;
+        hsStudioState.warmth = 6;
+      } else if (p === "warm") {
+        hsStudioState.brightness = 107;
+        hsStudioState.contrast = 105;
+        hsStudioState.warmth = 14;
+      } else if (p === "crisp") {
+        hsStudioState.brightness = 106;
+        hsStudioState.contrast = 116;
+        hsStudioState.warmth = 0;
+      }
+      document.getElementById("hsBrightSlider").value = hsStudioState.brightness;
+      document.getElementById("hsBrightVal").textContent = hsStudioState.brightness + "%";
+      document.getElementById("hsContrastSlider").value = hsStudioState.contrast;
+      document.getElementById("hsContrastVal").textContent = hsStudioState.contrast + "%";
+      document.getElementById("hsWarmthSlider").value = hsStudioState.warmth;
+      document.getElementById("hsWarmthVal").textContent =
+        (hsStudioState.warmth > 0 ? "+" : "") + hsStudioState.warmth;
+      renderHeadshotStudioCanvas(false);
+    };
+  });
+
+  // Interactive Drag-to-Pan on Studio Canvas
+  const hsCan = document.getElementById("hsStudioCanvas");
+  if (hsCan) {
+    hsCan.addEventListener("pointerdown", (e) => {
+      hsStudioState.isDragging = true;
+      hsStudioState.dragStartX = e.clientX - hsStudioState.panX;
+      hsStudioState.dragStartY = e.clientY - hsStudioState.panY;
+      hsCan.setPointerCapture(e.pointerId);
+    });
+    hsCan.addEventListener("pointermove", (e) => {
+      if (!hsStudioState.isDragging) return;
+      hsStudioState.panX = Math.max(-140, Math.min(140, Math.round(e.clientX - hsStudioState.dragStartX)));
+      hsStudioState.panY = Math.max(-140, Math.min(140, Math.round(e.clientY - hsStudioState.dragStartY)));
+      document.getElementById("hsPanXSlider").value = hsStudioState.panX;
+      document.getElementById("hsPanXVal").textContent = hsStudioState.panX;
+      document.getElementById("hsPanYSlider").value = hsStudioState.panY;
+      document.getElementById("hsPanYVal").textContent = hsStudioState.panY;
+      renderHeadshotStudioCanvas(false);
+    });
+    hsCan.addEventListener("pointerup", () => {
+      hsStudioState.isDragging = false;
+    });
+  }
+
+  // Download High-Res PNG
+  const hsDlBtn = document.getElementById("hsDownloadPngBtn");
+  if (hsDlBtn) {
+    hsDlBtn.onclick = () => {
+      renderHeadshotStudioCanvas(true);
+      const can = document.getElementById("hsStudioCanvas");
+      const pngUrl = can.toDataURL("image/png");
+      renderHeadshotStudioCanvas(false);
+      const a = document.createElement("a");
+      a.href = pngUrl;
+      a.download = `optitrajectoryai-headshot-${(state.name || "portrait").toLowerCase().replace(/\s+/g, "-")}.png`;
+      a.click();
+    };
+  }
+
+  // Save Studio Headshot to Profile & Infographic
+  const hsSaveBtn = document.getElementById("hsSaveStudioHeadshotBtn");
+  if (hsSaveBtn) {
+    hsSaveBtn.onclick = () => {
+      const exportedDataUrl = renderHeadshotStudioCanvas(true);
+      renderHeadshotStudioCanvas(false);
+      if (exportedDataUrl) {
+        state.headshotDataUrl = exportedDataUrl;
+        saveState({ immediate: true });
+        updateHeadshotPreviews();
+        renderInfographicCanvasOnly();
+      }
+      closeHeadshotStudioModal();
     };
   }
 

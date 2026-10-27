@@ -8,9 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
-  <!-- Client-side Word (.docx) & PDF (.pdf) Resume Parsers -->
+  <!-- Client-side Word (.docx), PDF (.pdf) & On-Device AI Selfie Segmentation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous" defer></script>
 </head>
 <body>
   <!-- ================================================================ -->
@@ -556,18 +557,21 @@
               <p id="wizStep2Subtext">I'll cross-check your resume against your target roles to verify you're a strong match, format your ATS Resume & Cover Letter, and build your industry-calibrated 1-page Infographic.</p>
             </div>
 
-            <!-- Headshot Upload Bar -->
+            <!-- Headshot Upload & Studio Wizard Bar -->
             <div class="upload-dropzone mt-16">
               <div style="display:flex; align-items:center; gap:14px;">
-                <div class="wiz-headshot-preview" id="wizHeadshotPreview">📸</div>
+                <div class="wiz-headshot-preview" id="wizHeadshotPreview" title="Click to open Headshot Studio Wizard" style="cursor:pointer;">📸</div>
                 <div>
-                  <strong>1. Upload Your Professional Headshot (for your 1-Page Infographic)</strong>
-                  <p style="font-size:0.8rem; color:var(--text-secondary);">JPG, PNG, or WebP. Automatically cropped & resized for your executive profile card.</p>
+                  <strong>1. Add or Create Your Professional Headshot (for your Career-Focused 1-Page Infographic)</strong>
+                  <p style="font-size:0.8rem; color:var(--text-secondary);">Don't have a formal headshot? Upload any casual phone photo or selfie into our <strong>Headshot Studio Wizard</strong>—it removes messy backgrounds and balances studio lighting while keeping <strong>100% of your real face &amp; identity untouched</strong>.</p>
                 </div>
               </div>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <label class="btn btn-primary btn-sm file-upload-label">
-                  📸 Choose Headshot Photo
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button type="button" class="btn btn-primary btn-sm" id="wizOpenHeadshotStudioBtn">
+                  ✨ Create Pro Headshot from Casual Photo
+                </button>
+                <label class="btn btn-secondary btn-sm file-upload-label">
+                  📸 Quick Upload Photo
                   <input type="file" id="wizHeadshotFileInput" accept="image/*" hidden />
                 </label>
                 <button type="button" class="btn btn-ghost btn-sm hidden" id="wizClearHeadshotBtn">Remove</button>
@@ -974,21 +978,24 @@
 
         <div class="infographic-toolbar card no-print">
           <div class="toolbar-left">
-            <h3>🎨 Enterprise Candidate Infographic Studio</h3>
-            <p id="industryAutoStatusText">Automatically calibrated to your target industry standard (Deloitte / Microsoft 1-Page Executive Profile).</p>
+            <h3>🎨 Career-Focused 1-Page Infographic Studio</h3>
+            <p id="industryAutoStatusText">Automatically calibrated to your target career field and industry standards.</p>
           </div>
           <div class="toolbar-controls">
+            <button type="button" class="btn btn-primary btn-sm" id="infoOpenHeadshotStudioBtn">
+              ✨ Studio Headshot Creator
+            </button>
             <label class="btn btn-secondary btn-sm file-upload-label">
-              📸 Change Headshot
+              📸 Quick Upload Photo
               <input type="file" id="infoHeadshotInput" accept="image/*" hidden />
             </label>
             <div class="control-item">
               <label for="infoThemeSelect">Industry Standard Layout</label>
               <select id="infoThemeSelect" class="input-select input-sm">
-                <option value="deloitte">Deloitte Consulting & Corporate Standard (Business, Finance, Ops, HR & Legal)</option>
-                <option value="microsoft">Microsoft Modern Enterprise Standard (Management, Sales, Project & Tech)</option>
-                <option value="healthcare">Healthcare, Education & Public Service Standard (Clinical, Teaching & Nonprofit)</option>
-                <option value="creative">Executive Editorial & Brand Standard (Marketing, Media, Design & Hospitality)</option>
+                <option value="deloitte">Corporate &amp; Advisory Standard (Business, Finance, Ops, HR &amp; Legal)</option>
+                <option value="microsoft">Modern Enterprise Standard (Management, Sales, Project &amp; Tech)</option>
+                <option value="healthcare">Healthcare, Education &amp; Public Service Standard (Clinical, Teaching &amp; Nonprofit)</option>
+                <option value="creative">Executive Editorial &amp; Brand Standard (Marketing, Media, Design &amp; Hospitality)</option>
               </select>
             </div>
             <div class="control-item">
@@ -1119,6 +1126,166 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- 4. PROFESSIONAL HEADSHOT STUDIO WIZARD MODAL                     -->
+  <!-- ================================================================ -->
+  <div class="hs-modal-backdrop hidden no-print" id="headshotStudioModal" role="dialog" aria-modal="true" aria-labelledby="hsModalTitle">
+    <div class="hs-modal-card">
+      <div class="hs-modal-header">
+        <div>
+          <span class="tag tag-accent">✨ 100% Real-Face Studio Portrait Creator</span>
+          <h3 id="hsModalTitle" style="margin-top:4px;">Professional Headshot Studio Wizard</h3>
+          <p style="font-size:0.82rem; color:var(--text-secondary);">
+            Turn any casual phone photo or selfie into a polished executive headshot. <strong>We never alter your facial features, age, or identity</strong>—our studio engine removes distracting backgrounds, centers your head-and-shoulders framing, and balances studio portrait lighting.
+          </p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="hsCloseModalBtn" aria-label="Close Headshot Studio">✕ Close</button>
+      </div>
+
+      <div class="hs-studio-body">
+        <!-- LEFT: LIVE STUDIO PORTRAIT STAGE & ALIGNMENT OVERLAY -->
+        <div class="hs-stage-col">
+          <div class="hs-canvas-frame">
+            <canvas id="hsStudioCanvas" width="520" height="520"></canvas>
+            <video id="hsWebcamVideo" class="hidden" autoplay playsinline muted></video>
+          </div>
+
+          <div class="hs-stage-status-bar">
+            <span id="hsAiSegStatus" class="tag tag-success">✓ Studio Engine Ready (100% Authentic Likeness)</span>
+            <label class="switch-label" style="font-size:0.76rem; color:var(--text-secondary);">
+              <input type="checkbox" id="hsShowGuideCheckbox" checked />
+              <span>Show Head &amp; Shoulders Guide</span>
+            </label>
+          </div>
+
+          <div class="hs-quick-presets">
+            <span style="font-size:0.74rem; color:var(--text-secondary); font-weight:700;">1-Click Lighting Presets:</span>
+            <button type="button" class="btn btn-secondary btn-sm hs-preset-btn" data-preset="natural">✨ Balanced Studio</button>
+            <button type="button" class="btn btn-secondary btn-sm hs-preset-btn" data-preset="brighten">💡 Fix Dim Indoor Photo</button>
+            <button type="button" class="btn btn-secondary btn-sm hs-preset-btn" data-preset="warm">☀️ Warm Executive</button>
+            <button type="button" class="btn btn-secondary btn-sm hs-preset-btn" data-preset="crisp">🎯 High Clarity</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: 4-STEP WIZARD CONTROLS -->
+        <div class="hs-controls-col">
+          <!-- Step 1: Upload or Camera -->
+          <div class="hs-step-box">
+            <div class="hs-step-title">Step 1 • Choose a Casual Photo or Use Camera</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+              <label class="btn btn-primary btn-sm file-upload-label">
+                📂 Upload Casual Photo (Phone / Computer)
+                <input type="file" id="hsModalFileInput" accept="image/*" hidden />
+              </label>
+              <button type="button" class="btn btn-secondary btn-sm" id="hsStartWebcamBtn">📷 Use My Camera</button>
+              <button type="button" class="btn btn-primary btn-sm hidden" id="hsCaptureWebcamBtn">📸 Snap Photo Now</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Studio Backdrop Replacement -->
+          <div class="hs-step-box">
+            <div class="hs-step-title">Step 2 • Choose Professional Studio Backdrop</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:8px;">
+              Replaces messy rooms, cars, or outdoor backgrounds while keeping your real face &amp; clothing untouched:
+            </p>
+            <div class="hs-backdrop-grid" id="hsBackdropGrid">
+              <button type="button" class="hs-backdrop-btn active" data-bg="studio-slate">
+                <span class="hs-swatch swatch-slate"></span>
+                <span>Executive Slate</span>
+              </button>
+              <button type="button" class="hs-backdrop-btn" data-bg="studio-navy">
+                <span class="hs-swatch swatch-navy"></span>
+                <span>Corporate Navy</span>
+              </button>
+              <button type="button" class="hs-backdrop-btn" data-bg="studio-office">
+                <span class="hs-swatch swatch-office"></span>
+                <span>Warm Office Glow</span>
+              </button>
+              <button type="button" class="hs-backdrop-btn" data-bg="studio-clinical">
+                <span class="hs-swatch swatch-clinical"></span>
+                <span>Healthcare Teal/White</span>
+              </button>
+              <button type="button" class="hs-backdrop-btn" data-bg="studio-ivory">
+                <span class="hs-swatch swatch-ivory"></span>
+                <span>Editorial Ivory</span>
+              </button>
+              <button type="button" class="hs-backdrop-btn" data-bg="orig-blur">
+                <span class="hs-swatch swatch-blur"></span>
+                <span>Soft Blur Original</span>
+              </button>
+              <button type="button" class="hs-backdrop-btn" data-bg="orig-clean">
+                <span class="hs-swatch swatch-orig"></span>
+                <span>Keep Original BG</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Head & Shoulders Portrait Framing -->
+          <div class="hs-step-box">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="hs-step-title">Step 3 • Frame Your Head &amp; Shoulders</div>
+              <button type="button" class="btn btn-ghost btn-sm" id="hsResetFramingBtn" style="padding:2px 8px; font-size:0.72rem;">Reset Framing</button>
+            </div>
+            <div class="hs-slider-grid mt-8">
+              <div class="hs-slider-item">
+                <label for="hsZoomSlider">Zoom <span id="hsZoomVal">115%</span></label>
+                <input type="range" id="hsZoomSlider" min="90" max="250" value="115" />
+              </div>
+              <div class="hs-slider-item">
+                <label for="hsTiltSlider">Straighten / Tilt <span id="hsTiltVal">0°</span></label>
+                <input type="range" id="hsTiltSlider" min="-15" max="15" value="0" />
+              </div>
+              <div class="hs-slider-item">
+                <label for="hsPanXSlider">Horizontal Center <span id="hsPanXVal">0</span></label>
+                <input type="range" id="hsPanXSlider" min="-140" max="140" value="0" />
+              </div>
+              <div class="hs-slider-item">
+                <label for="hsPanYSlider">Vertical Center <span id="hsPanYVal">0</span></label>
+                <input type="range" id="hsPanYSlider" min="-140" max="140" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Studio Portrait Lighting & Finishing Ring -->
+          <div class="hs-step-box">
+            <div class="hs-step-title">Step 4 • Studio Key Light &amp; Portrait Ring</div>
+            <div class="hs-slider-grid mt-8">
+              <div class="hs-slider-item">
+                <label for="hsBrightSlider">Studio Key Light <span id="hsBrightVal">105%</span></label>
+                <input type="range" id="hsBrightSlider" min="85" max="135" value="105" />
+              </div>
+              <div class="hs-slider-item">
+                <label for="hsContrastSlider">Contrast &amp; Pop <span id="hsContrastVal">104%</span></label>
+                <input type="range" id="hsContrastSlider" min="88" max="130" value="104" />
+              </div>
+              <div class="hs-slider-item">
+                <label for="hsWarmthSlider">Skin Tone Balance <span id="hsWarmthVal">+4</span></label>
+                <input type="range" id="hsWarmthSlider" min="-25" max="25" value="4" />
+              </div>
+              <div class="hs-slider-item">
+                <label for="hsRingSelect">Portrait Frame Ring</label>
+                <select id="hsRingSelect" class="input-select input-sm">
+                  <option value="accent">Industry Accent Ring</option>
+                  <option value="white">Studio White Ring</option>
+                  <option value="gold">Executive Gold Ring</option>
+                  <option value="none">No Ring Border</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hs-modal-footer">
+        <button type="button" class="btn btn-secondary" id="hsDownloadPngBtn">⬇️ Download High-Res Headshot (.PNG)</button>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-ghost" id="hsCancelModalBtn">Cancel</button>
+          <button type="button" class="btn btn-primary btn-lg" id="hsSaveStudioHeadshotBtn">✓ Save Headshot to My 1-Page Infographic</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="./app.js"></script>
