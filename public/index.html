@@ -359,17 +359,60 @@
               </div>
 
               <div class="form-group">
-                <label for="wizMinSalary">9. Target Minimum Base Salary ($ USD)</label>
+                <label for="wizEmploymentType">9. Are you looking for Full-Time or Part-Time?</label>
+                <select id="wizEmploymentType" class="input-select">
+                  <option value="Full-Time">Full-Time</option>
+                  <option value="Part-Time">Part-Time</option>
+                  <option value="Full-Time or Part-Time">Full-Time or Part-Time (Flexible)</option>
+                  <option value="Contract / Consulting / Fractional">Contract / Consulting / Fractional</option>
+                  <option value="Per Diem / PRN / Seasonal">Per Diem / PRN / Seasonal</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="wizMinSalary">10. Target Minimum Compensation ($ USD Annual or Hourly Equivalent)</label>
                 <input type="number" id="wizMinSalary" class="input-field" step="5000" placeholder="95000" />
               </div>
 
               <div class="form-group">
-                <label for="wizLocation">10. Your City / State (or Relocation Target)</label>
+                <label for="wizLocation">11. Your City / State (or Relocation Target)</label>
                 <input type="text" id="wizLocation" class="input-field" placeholder="e.g. Chicago, IL or Open to Relocation" />
               </div>
 
               <div class="form-group">
-                <label for="wizDealbreaker">11. Your #1 Non-Negotiable / Priority in Your Next Role</label>
+                <label for="wizManagementScope">12. Management & Budget Scope (Direct Reports / P&L)</label>
+                <select id="wizManagementScope" class="input-select">
+                  <option value="Individual Contributor / Specialist">Individual Contributor / Specialist (No direct reports)</option>
+                  <option value="Team Lead / Supervisor (1–8 Staff)">Team Lead / Supervisor (1–8 direct reports)</option>
+                  <option value="Manager / Department Head (8–25+ Staff & Budget)">Manager / Department Head (8–25+ staff & budget)</option>
+                  <option value="Director / Executive (Multi-Team & P&L Ownership)">Director / Executive (Multi-team & P&L ownership)</option>
+                  <option value="Project / Cross-Functional Lead (Matrixed Leadership)">Project / Cross-Functional Lead (Influence without direct reports)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="wizTimeline">13. How soon are you looking to start a new role?</label>
+                <select id="wizTimeline" class="input-select">
+                  <option value="Immediately Available / Actively Interviewing">Immediately Available / Actively Interviewing</option>
+                  <option value="Ready to Move in 30–60 Days">Ready to Move in 30–60 Days</option>
+                  <option value="Selectively Exploring (Next 3–6 Months)">Selectively Exploring (Next 3–6 Months)</option>
+                  <option value="Confidentially Open to the Right Offer">Confidentially Open to the Right Offer</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="wizOrgSize">14. Preferred Organization Size / Environment</label>
+                <select id="wizOrgSize" class="input-select">
+                  <option value="Open to Any Organization Size">Open to Any Organization Size</option>
+                  <option value="Large Enterprise / Hospital System / School District">Large Enterprise / Health System / School District</option>
+                  <option value="Mid-Sized Growing Organization">Mid-Sized Growing Organization</option>
+                  <option value="Small / Community / Boutique Team">Small / Community / Boutique Organization</option>
+                  <option value="Government / Public Sector / Nonprofit">Government / Public Sector / Nonprofit</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="wizDealbreaker">15. Your #1 Non-Negotiable Priority</label>
                 <select id="wizDealbreaker" class="input-select">
                   <option value="Compensation & Total Rewards">Meeting my target salary & benefits floor</option>
                   <option value="Work-Life Balance & Flexibility">Work-life balance & schedule flexibility</option>
@@ -379,9 +422,19 @@
                 </select>
               </div>
 
+              <div class="form-group">
+                <label for="wizIndustries">16. Specific Sub-Industries You WANT to Target (Optional)</label>
+                <input type="text" id="wizIndustries" class="input-field" placeholder="e.g. Pediatric Healthcare, Higher Education, Corporate Finance, Advisory" />
+              </div>
+
+              <div class="form-group">
+                <label for="wizExcludedIndustries">17. Any Industries You Do NOT Want to Work In? (Recruiter Filter)</label>
+                <input type="text" id="wizExcludedIndustries" class="input-field" placeholder="e.g. Retail, Call Centers, Fast Food, Insurance Sales, Defense" />
+              </div>
+
               <div class="form-group full-width">
-                <label for="wizIndustries">Specific Sub-Industries or Specialties (Optional)</label>
-                <input type="text" id="wizIndustries" class="input-field" placeholder="e.g. Pediatric Healthcare, Higher Education, Corporate Finance, Retail Operations, Advisory" />
+                <label for="wizOtherRequirements">18. Any Other Specific Requirements for the Position You Are Looking For?</label>
+                <textarea id="wizOtherRequirements" class="input-field" rows="2" placeholder="e.g. No weekend or night shifts, max 10% travel, 4-day workweek option, tuition reimbursement, union/pension benefits, or visa sponsorship..."></textarea>
               </div>
             </div>
 
@@ -544,6 +597,16 @@
               </select>
             </div>
             <div class="form-group">
+              <label for="inpEmploymentType">Employment Type (Full-Time / Part-Time)</label>
+              <select id="inpEmploymentType" class="input-select">
+                <option value="Full-Time">Full-Time</option>
+                <option value="Part-Time">Part-Time</option>
+                <option value="Full-Time or Part-Time">Full-Time or Part-Time (Flexible)</option>
+                <option value="Contract / Consulting / Fractional">Contract / Consulting / Fractional</option>
+                <option value="Per Diem / PRN / Seasonal">Per Diem / PRN / Seasonal</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label for="inpMinSalary">Target Base Salary ($ USD)</label>
               <input type="number" id="inpMinSalary" class="input-field" step="5000" />
             </div>
@@ -554,6 +617,14 @@
             <div class="form-group">
               <label for="inpIndustries">Preferred Industries & Career Sector</label>
               <input type="text" id="inpIndustries" class="input-field" placeholder="e.g. Healthcare, Corporate Finance, Education, Operations, Retail, Technology" />
+            </div>
+            <div class="form-group">
+              <label for="inpExcludedIndustries">Industries to Exclude (Do Not Match)</label>
+              <input type="text" id="inpExcludedIndustries" class="input-field" placeholder="e.g. Retail, Call Centers, Insurance" />
+            </div>
+            <div class="form-group full-width">
+              <label for="inpOtherRequirements">Additional Position Requirements & Must-Haves</label>
+              <input type="text" id="inpOtherRequirements" class="input-field" placeholder="e.g. No weekends, max 10% travel, tuition reimbursement..." />
             </div>
           </div>
 

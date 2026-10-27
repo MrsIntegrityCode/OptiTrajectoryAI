@@ -1177,6 +1177,20 @@ function evaluateGoalToResumeMatch() {
     );
   }
 
+  // Check if excluded industries appear in the candidate's current resume
+  const excludedList = (state.excludedIndustries || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 2);
+  const resumeMentionsExcluded = excludedList.filter((ex) =>
+    fullResumeCorpus.includes(ex.toLowerCase())
+  );
+  if (resumeMentionsExcluded.length > 0 && !state.resumeBridgedToGoals) {
+    gaps.push(
+      `<strong>Excluded Industry De-Emphasis Needed:</strong> You noted you do <em>not</em> want to work in <strong>${escapeHtml(resumeMentionsExcluded.join(", "))}</strong>, which currently appears in your resume. As your recruiter, I recommend reframing those bullets around transferable <em>${escapeHtml(targetField)}</em> competencies so recruiters don't pigeonhole you into ${escapeHtml(resumeMentionsExcluded[0])}.`
+    );
+  }
+
   let status = "good"; // "good" | "warn" | "mismatch"
   let headline = `✅ Strong Goal-to-Resume Match (${alignmentScore}% Recruiter Alignment)`;
   let summaryNote = `${callName}, as an ${practiceName}, I verified that your resume experience and competencies align well with your goal of landing a ${primaryTargetRole} role.`;
@@ -1252,6 +1266,14 @@ function renderRecruiterGoalMatchBanners() {
       <p style="font-size:0.88rem; color:var(--text-primary); line-height:1.5;">
         ${escapeHtml(check.summaryNote)}
       </p>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+        <span class="tag tag-accent">⏱️ ${escapeHtml(state.employmentType || "Full-Time")}</span>
+        <span class="tag tag-accent">📍 ${escapeHtml(state.workStyle || "On-site / Hybrid")}</span>
+        ${state.managementScope ? `<span class="tag tag-accent">👥 ${escapeHtml(state.managementScope)}</span>` : ""}
+        ${state.timeline ? `<span class="tag tag-accent">📅 ${escapeHtml(state.timeline)}</span>` : ""}
+        ${state.excludedIndustries ? `<span class="tag tag-warn">🚫 Excluding: ${escapeHtml(state.excludedIndustries)}</span>` : ""}
+        ${state.otherRequirements ? `<span class="tag tag-success">✓ Must-Have: ${escapeHtml(state.otherRequirements)}</span>` : ""}
+      </div>
       ${
         check.gaps.length > 0
           ? `<ul class="recruiter-gap-list">
@@ -1331,10 +1353,16 @@ function renderGuidedWizard() {
   const yrsEl = document.getElementById("wizYearsExp");
   const credEl = document.getElementById("wizCredentials");
   const styleEl = document.getElementById("wizWorkStyle");
+  const empTypeEl = document.getElementById("wizEmploymentType");
   const salEl = document.getElementById("wizMinSalary");
   const locEl = document.getElementById("wizLocation");
+  const mgmtEl = document.getElementById("wizManagementScope");
+  const timeEl = document.getElementById("wizTimeline");
+  const orgSizeEl = document.getElementById("wizOrgSize");
   const dealEl = document.getElementById("wizDealbreaker");
   const indEl = document.getElementById("wizIndustries");
+  const exclEl = document.getElementById("wizExcludedIndustries");
+  const otherReqEl = document.getElementById("wizOtherRequirements");
   const resTextEl = document.getElementById("wizResumeText");
 
   if (prefEl) prefEl.value = state.preferredName || "";
@@ -1346,10 +1374,16 @@ function renderGuidedWizard() {
   if (yrsEl) yrsEl.value = state.yearsExp ?? 8;
   if (credEl) credEl.value = state.educationText || "";
   if (styleEl) styleEl.value = state.workStyle || "On-site / Hybrid";
+  if (empTypeEl) empTypeEl.value = state.employmentType || "Full-Time";
   if (salEl) salEl.value = state.minSalary || 110000;
   if (locEl) locEl.value = state.location || "";
+  if (mgmtEl && state.managementScope) mgmtEl.value = state.managementScope;
+  if (timeEl && state.timeline) timeEl.value = state.timeline;
+  if (orgSizeEl && state.orgSize) orgSizeEl.value = state.orgSize;
   if (dealEl && state.dealbreaker) dealEl.value = state.dealbreaker;
   if (indEl) indEl.value = state.industries || "";
+  if (exclEl) exclEl.value = state.excludedIndustries || "";
+  if (otherReqEl) otherReqEl.value = state.otherRequirements || "";
 
   if (resTextEl && !resTextEl.value) {
     // Pre-populate with existing resume if user already has one
@@ -1382,10 +1416,16 @@ function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
   const yearsExp = Number((document.getElementById("wizYearsExp") || {}).value) || 8;
   const credentials = ((document.getElementById("wizCredentials") || {}).value || "").trim();
   const workStyle = document.getElementById("wizWorkStyle").value || "On-site / Hybrid";
+  const employmentType = (document.getElementById("wizEmploymentType") || {}).value || "Full-Time";
   const minSalary = Number(document.getElementById("wizMinSalary").value) || 105000;
   const location = (document.getElementById("wizLocation").value || "").trim() || "United States";
+  const managementScope = (document.getElementById("wizManagementScope") || {}).value || "";
+  const timeline = (document.getElementById("wizTimeline") || {}).value || "Immediately Available / Actively Interviewing";
+  const orgSize = (document.getElementById("wizOrgSize") || {}).value || "Open to Any Organization Size";
   const dealbreaker = (document.getElementById("wizDealbreaker") || {}).value || "Compensation & Total Rewards";
   const industries = (document.getElementById("wizIndustries").value || "").trim() || careerField;
+  const excludedIndustries = ((document.getElementById("wizExcludedIndustries") || {}).value || "").trim();
+  const otherRequirements = ((document.getElementById("wizOtherRequirements") || {}).value || "").trim();
 
   const primaryRole = (roles.split(",")[0] || "Target Role").trim();
   if (prefName) state.preferredName = prefName;
@@ -1395,17 +1435,23 @@ function autoCalibrateBackgroundDetailsFromGoalsAndResume(rawResumeText) {
   state.careerField = careerField;
   state.transitionType = transitionType;
   state.yearsExp = yearsExp;
+  state.employmentType = employmentType;
+  state.managementScope = managementScope;
+  state.timeline = timeline;
+  state.orgSize = orgSize;
   state.dealbreaker = dealbreaker;
+  state.excludedIndustries = excludedIndustries;
+  state.otherRequirements = otherRequirements;
   state.targetRoles = roles;
   state.headline = primaryRole;
   state.mission =
     goal ||
-    `Advance into a high-impact ${primaryRole} position delivering measurable outcomes across ${industries}.`;
+    `Advance into a high-impact ${employmentType} ${primaryRole} position delivering measurable outcomes across ${industries}.`;
   state.workStyle = workStyle;
   state.minSalary = minSalary;
   state.location = location;
   state.industries = industries;
-  state.infographicTagline = `Available for ${primaryRole} Opportunities`;
+  state.infographicTagline = `${employmentType} • Available for ${primaryRole} Roles`;
   state.resumeBridgedToGoals = false;
 
   // Auto-select industry-calibrated infographic theme (Deloitte / Microsoft / Healthcare / Creative)
@@ -1489,8 +1535,11 @@ function renderCompassModule() {
   bindInput("inpMission", "mission");
   bindInput("inpTargetRoles", "targetRoles");
   bindInput("inpIndustries", "industries");
+  bindInput("inpExcludedIndustries", "excludedIndustries");
+  bindInput("inpOtherRequirements", "otherRequirements");
   bindInput("inpMinSalary", "minSalary", true);
   bindInput("inpWorkStyle", "workStyle");
+  bindInput("inpEmploymentType", "employmentType");
 
   // Horizons
   ["h1", "h2", "h3"].forEach((hKey, idx) => {
@@ -2283,7 +2332,7 @@ function renderInfographicCanvasOnly() {
           <h2 class="corp-name">${escapeHtml(state.name)}<span class="corp-green-dot">.</span></h2>
           <div class="corp-headline">${escapeHtml(state.headline)}</div>
           <div class="corp-meta-line">
-            📍 ${escapeHtml(state.location)} &nbsp;|&nbsp; 💼 ${escapeHtml(state.yearsExp || 8)}+ Yrs Experience &nbsp;|&nbsp; 🎯 ${escapeHtml(state.workStyle)} &nbsp;|&nbsp; ✉️ ${escapeHtml(state.contactEmail || (currentUser && currentUser.email) || "")}
+            📍 ${escapeHtml(state.location)} &nbsp;|&nbsp; 💼 ${escapeHtml(state.yearsExp || 8)}+ Yrs Experience &nbsp;|&nbsp; 🎯 ${escapeHtml(state.employmentType || "Full-Time")} (${escapeHtml(state.workStyle)}) &nbsp;|&nbsp; ✉️ ${escapeHtml(state.contactEmail || (currentUser && currentUser.email) || "")}
           </div>
         </div>
       </div>
@@ -2428,13 +2477,26 @@ function scoreJobAgainstProfile(job) {
   });
 
   const skillRatio = skills.length ? matchedKeywords.length / skills.length : 0.6;
-  const rawScore = Math.round(skillRatio * 68 + (titleHit ? 26 : 12));
-  const score = Math.max(48, Math.min(98, rawScore));
+  let rawScore = Math.round(skillRatio * 68 + (titleHit ? 26 : 12));
+
+  // Check if job hits any excluded industries specified by the candidate
+  const excludedList = (state.excludedIndustries || "")
+    .toLowerCase()
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 2);
+  const hitsExcludedIndustry = excludedList.some((ex) => text.includes(ex));
+  if (hitsExcludedIndustry) {
+    rawScore -= 40;
+  }
+
+  const score = Math.max(20, Math.min(98, rawScore));
 
   return {
     score,
     matchedKeywords,
-    missingKeywords
+    missingKeywords,
+    hitsExcludedIndustry
   };
 }
 
@@ -2444,30 +2506,43 @@ function getDynamicRoleCuratedJobs(query) {
   const baseSal = Number(state.minSalary) || 105000;
   const salLow = Math.round(baseSal / 1000);
   const salHigh = Math.round((baseSal * 1.22) / 1000);
-  const qEnc = encodeURIComponent(primaryRole);
+  const empType = state.employmentType || "Full-Time";
+  const qEnc = encodeURIComponent(`${primaryRole} ${empType.includes("Part-Time") ? "Part Time" : ""}`.trim());
+
+  // Filter out any static curated jobs that match the user's excluded industries
+  const excludedList = (state.excludedIndustries || "")
+    .toLowerCase()
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 2);
+
+  const allowedCurated = CURATED_REAL_JOBS.filter((j) => {
+    const blob = `${j.title} ${j.company} ${j.category} ${j.description}`.toLowerCase();
+    return !excludedList.some((ex) => blob.includes(ex));
+  });
 
   return [
     {
       id: "dyn-match-1",
-      title: `${primaryRole}`,
+      title: `${primaryRole} (${empType})`,
       company: "Leading National Employer (Direct Hiring Portal)",
       location: `${state.location || "United States"} (${state.workStyle || "Hybrid / Remote"})`,
       salary: `$${salLow},000 - $${salHigh},000`,
-      type: "Full Time",
+      type: empType,
       category: state.careerField || "General",
       url: `https://www.linkedin.com/jobs/search/?keywords=${qEnc}`,
       publishedAt: "2026-10-27",
       tags: topSkillNames.slice(0, 4).length ? topSkillNames.slice(0, 4) : ["Leadership", "Operations", "Strategy"],
-      description: `Seeking an experienced ${primaryRole} to lead high-impact initiatives across ${state.industries || state.careerField || "our organization"}. Key competencies include ${topSkillNames.join(", ") || "strategic execution, stakeholder collaboration, and measurable performance delivery"}.`,
-      source: "Personalized Target Match"
+      description: `Seeking an experienced ${primaryRole} (${empType}) to lead high-impact initiatives across ${state.industries || state.careerField || "our organization"}. ${state.otherRequirements ? "Position accommodates: " + state.otherRequirements + ". " : ""}Key competencies include ${topSkillNames.join(", ") || "strategic execution, stakeholder collaboration, and measurable performance delivery"}.`,
+      source: "Personalized Recruiter Match"
     },
     {
       id: "dyn-match-2",
-      title: `Senior / Lead ${primaryRole}`,
+      title: `Senior / Lead ${primaryRole} (${empType})`,
       company: "Regional Enterprise & Advisory Partners",
       location: state.workStyle || "Hybrid / On-site",
       salary: `$${salLow + 10},000 - $${salHigh + 15},000`,
-      type: "Full Time",
+      type: empType,
       category: state.careerField || "General",
       url: `https://www.indeed.com/jobs?q=${qEnc}`,
       publishedAt: "2026-10-27",
@@ -2475,7 +2550,7 @@ function getDynamicRoleCuratedJobs(query) {
       description: `Lead departmental excellence and cross-functional teams as a Senior ${primaryRole}. Ideal candidates bring proven results in ${topSkillNames.join(", ") || "operations and team leadership"}.`,
       source: "Verified Career Match"
     },
-    ...CURATED_REAL_JOBS
+    ...allowedCurated
   ];
 }
 
