@@ -1222,10 +1222,91 @@
             </div>
           </div>
 
-          <!-- Step 3: Head & Shoulders Portrait Framing -->
+          <!-- Step 3: Inclusive Professional Attire & Wardrobe Selector -->
+          <div class="hs-step-box">
+            <div class="hs-step-title">Step 3 • Would You Like to Change Casual Clothing? (Choose Your Style)</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin:4px 0 8px;">
+              Not everyone wants to wear a formal suit! Tell us what style feels most authentic to you and your career field (or keep your own outfit):
+            </p>
+            <div class="hs-attire-grid" id="hsAttireGrid">
+              <button type="button" class="hs-attire-btn active" data-attire="keep-original">
+                <span>👚 Keep My Current Outfit</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="blouse">
+                <span>✨ Silk / Tailored Blouse</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="dress">
+                <span>👗 Professional Dress</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="cardigan">
+                <span>🧶 Soft Cardigan &amp; Top</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="button-shirt">
+                <span>👔 Crisp Dress Shirt</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="open-blazer">
+                <span>💼 Blazer over Blouse/Top</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="classic-suit">
+                <span>🏛️ Classic Business Suit</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="scrubs">
+                <span>🩺 Healthcare Scrubs</span>
+              </button>
+              <button type="button" class="hs-attire-btn" data-attire="lab-coat">
+                <span>🥼 Clinical White Coat</span>
+              </button>
+            </div>
+
+            <!-- Attire Color, Accessory & Fit Sub-Panel (Shown when an attire style is chosen) -->
+            <div id="hsAttireCustomPanel" class="hs-attire-custom-panel hidden mt-8">
+              <div class="hs-slider-grid">
+                <div class="hs-slider-item">
+                  <label for="hsAttireColorSelect">Attire Color Palette</label>
+                  <select id="hsAttireColorSelect" class="input-select input-sm">
+                    <option value="navy">Classic Executive Navy</option>
+                    <option value="charcoal">Charcoal / Slate Gray</option>
+                    <option value="ivory">Warm Ivory / Cream</option>
+                    <option value="teal">Clinical / Sage Teal</option>
+                    <option value="burgundy">Rich Burgundy / Plum</option>
+                    <option value="sky">Soft Sky / Chambray Blue</option>
+                    <option value="black">Classic Jet Black</option>
+                  </select>
+                </div>
+                <div class="hs-slider-item">
+                  <label for="hsAttireAccessorySelect">Optional Finishing Touch</label>
+                  <select id="hsAttireAccessorySelect" class="input-select input-sm">
+                    <option value="none">Clean Neckline (None)</option>
+                    <option value="pendant">Subtle Pearl / Gold Necklace</option>
+                    <option value="scarf">Soft Silk Neck Scarf</option>
+                    <option value="stethoscope">Clinical Stethoscope</option>
+                    <option value="tie">Classic Silk Tie</option>
+                  </select>
+                </div>
+                <div class="hs-slider-item">
+                  <label for="hsAttireYSlider">Shoulder / Neckline Height <span id="hsAttireYVal">0</span></label>
+                  <input type="range" id="hsAttireYSlider" min="-70" max="70" value="0" />
+                </div>
+                <div class="hs-slider-item">
+                  <label for="hsAttireScaleSlider">Shoulder Width Fit <span id="hsAttireScaleVal">100%</span></label>
+                  <input type="range" id="hsAttireScaleSlider" min="75" max="135" value="100" />
+                </div>
+              </div>
+              <div class="hs-ai-blend-bar mt-8">
+                <span style="font-size:0.73rem; color:var(--text-secondary);">
+                  💡 Adjust the shoulder sliders above so your new attire aligns naturally below your chin, or use optional AI studio blending:
+                </span>
+                <button type="button" class="btn btn-secondary btn-sm" id="hsGeminiAiBlendBtn">
+                  🪄 AI Studio Tailor (Optional Gemini Key)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Head & Shoulders Portrait Framing -->
           <div class="hs-step-box">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div class="hs-step-title">Step 3 • Frame Your Head &amp; Shoulders</div>
+              <div class="hs-step-title">Step 4 • Frame Your Head &amp; Shoulders</div>
               <button type="button" class="btn btn-ghost btn-sm" id="hsResetFramingBtn" style="padding:2px 8px; font-size:0.72rem;">Reset Framing</button>
             </div>
             <div class="hs-slider-grid mt-8">
@@ -1248,9 +1329,9 @@
             </div>
           </div>
 
-          <!-- Step 4: Studio Portrait Lighting & Finishing Ring -->
+          <!-- Step 5: Studio Portrait Lighting & Finishing Ring -->
           <div class="hs-step-box">
-            <div class="hs-step-title">Step 4 • Studio Key Light &amp; Portrait Ring</div>
+            <div class="hs-step-title">Step 5 • Studio Key Light &amp; Portrait Ring</div>
             <div class="hs-slider-grid mt-8">
               <div class="hs-slider-item">
                 <label for="hsBrightSlider">Studio Key Light <span id="hsBrightVal">105%</span></label>

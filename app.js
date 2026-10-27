@@ -1023,6 +1023,11 @@ const hsStudioState = {
   segmenter: null,
   webcamStream: null,
   backdrop: "studio-slate",
+  attire: "keep-original",
+  attireColor: "navy",
+  attireAccessory: "none",
+  attireOffsetY: 0,
+  attireScale: 100,
   zoom: 115,
   tilt: 0,
   panX: 0,
@@ -1036,6 +1041,401 @@ const hsStudioState = {
   dragStartX: 0,
   dragStartY: 0
 };
+
+function getAttireColorPalette(colorKey) {
+  const palettes = {
+    navy: { main: "#1e3a5f", dark: "#0f233d", light: "#2b5282", inner: "#f8fafc", trim: "#cbd5e1" },
+    charcoal: { main: "#334155", dark: "#1e293b", light: "#475569", inner: "#f8fafc", trim: "#cbd5e1" },
+    ivory: { main: "#f5f5f0", dark: "#d6d3cd", light: "#ffffff", inner: "#e2e8f0", trim: "#cbd5e1" },
+    teal: { main: "#0f766e", dark: "#115e59", light: "#14b8a6", inner: "#f0fdfa", trim: "#99f6e4" },
+    burgundy: { main: "#6b1d2f", dark: "#4a101d", light: "#88263d", inner: "#fdf2f8", trim: "#fbcfe8" },
+    sky: { main: "#3b82f6", dark: "#1d4ed8", light: "#60a5fa", inner: "#ffffff", trim: "#bfdbfe" },
+    black: { main: "#18181b", dark: "#09090b", light: "#27272a", inner: "#f8fafc", trim: "#a1a1aa" }
+  };
+  return palettes[colorKey] || palettes.navy;
+}
+
+function sampleSubjectSkinTone(ctx, size) {
+  try {
+    // Sample a small patch near the lower center of the face / upper neck
+    const data = ctx.getImageData(Math.round(size * 0.46), Math.round(size * 0.44), 24, 24).data;
+    let r = 0,
+      g = 0,
+      b = 0,
+      count = 0;
+    for (let i = 0; i < data.length; i += 16) {
+      if (data[i + 3] > 180) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
+    }
+    if (count > 0) {
+      r = Math.round(r / count);
+      g = Math.round(g / count);
+      b = Math.round(b / count);
+      return {
+        base: `rgb(${r}, ${g}, ${b})`,
+        shadow: `rgb(${Math.max(0, r - 24)}, ${Math.max(0, g - 24)}, ${Math.max(0, b - 24)})`
+      };
+    }
+  } catch (e) {}
+  return { base: "#d6a78a", shadow: "#b8876b" };
+}
+
+function drawStudioAttireOverlay(ctx, size) {
+  const style = hsStudioState.attire;
+  if (!style || style === "keep-original") return;
+
+  const pal = getAttireColorPalette(hsStudioState.attireColor);
+  const skin = sampleSubjectSkinTone(ctx, size);
+  const acc = hsStudioState.attireAccessory || "none";
+  const scale = (hsStudioState.attireScale || 100) / 100;
+  const offY = hsStudioState.attireOffsetY || 0;
+
+  ctx.save();
+  const cx = size / 2;
+  const neckY = size * 0.64 + offY;
+  ctx.translate(cx, neckY);
+  ctx.scale(scale, scale);
+
+  // Common torso/shoulder base shape
+  const drawShoulderBase = (fillStyle, shadowStyle) => {
+    const grad = ctx.createLinearGradient(0, -25, 0, 210);
+    grad.addColorStop(0, fillStyle);
+    grad.addColorStop(1, shadowStyle);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(-64, -18);
+    ctx.bezierCurveTo(-135, -8, -195, 28, -215, 195);
+    ctx.lineTo(215, 195);
+    ctx.bezierCurveTo(195, 28, 135, -8, 64, -18);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  // Fill natural neck V-patch so any casual t-shirt collar underneath is cleanly covered
+  const drawNaturalNeckline = (depthY, widthX) => {
+    const nGrad = ctx.createLinearGradient(0, -34, 0, depthY);
+    nGrad.addColorStop(0, skin.shadow);
+    nGrad.addColorStop(0.35, skin.base);
+    nGrad.addColorStop(1, skin.shadow);
+    ctx.fillStyle = nGrad;
+    ctx.beginPath();
+    ctx.moveTo(-widthX, -22);
+    ctx.quadraticCurveTo(0, depthY, widthX, -22);
+    ctx.quadraticCurveTo(0, -10, -widthX, -22);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  if (style === "blouse") {
+    // Silk / Tailored V-Neck or Keyhole Blouse (No Jacket)
+    drawShoulderBase(pal.main, pal.dark);
+    drawNaturalNeckline(58, 52);
+
+    // Silk draped V-collar trim & subtle center pleat
+    ctx.strokeStyle = pal.light;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(-54, -19);
+    ctx.quadraticCurveTo(-18, 28, 0, 50);
+    ctx.quadraticCurveTo(18, 28, 54, -19);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 50);
+    ctx.lineTo(0, 190);
+    ctx.stroke();
+  } else if (style === "dress") {
+    // Professional Executive Wrap / Sheath Dress
+    drawShoulderBase(pal.main, pal.dark);
+    drawNaturalNeckline(42, 60);
+
+    // Asymmetrical tailored wrap drape lines
+    ctx.strokeStyle = pal.light;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(-62, -18);
+    ctx.quadraticCurveTo(-10, 26, 48, 88);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(62, -18);
+    ctx.quadraticCurveTo(12, 22, -24, 48);
+    ctx.stroke();
+  } else if (style === "cardigan") {
+    // Soft Knit Cardigan layered over a Scoop-Neck Shell Top
+    drawShoulderBase(pal.main, pal.dark);
+
+    // Inner coordinating shell top
+    ctx.fillStyle = pal.inner;
+    ctx.beginPath();
+    ctx.moveTo(-50, -14);
+    ctx.lineTo(-42, 195);
+    ctx.lineTo(42, 195);
+    ctx.lineTo(50, -14);
+    ctx.closePath();
+    ctx.fill();
+
+    drawNaturalNeckline(30, 48);
+
+    // Ribbed cardigan open front edges & buttons
+    ctx.strokeStyle = pal.light;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(-48, -16);
+    ctx.lineTo(-38, 195);
+    ctx.moveTo(48, -16);
+    ctx.lineTo(38, 195);
+    ctx.stroke();
+  } else if (style === "button-shirt") {
+    // Crisp Button-Down Collared Shirt (No Jacket)
+    drawShoulderBase(pal.main, pal.dark);
+    drawNaturalNeckline(34, 42);
+
+    // Center placket
+    ctx.fillStyle = pal.light;
+    ctx.fillRect(-11, 24, 22, 170);
+
+    // Crisp shirt collar points
+    ctx.fillStyle = pal.main;
+    ctx.strokeStyle = pal.trim;
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(-48, -22);
+    ctx.lineTo(-68, 22);
+    ctx.lineTo(-10, 28);
+    ctx.lineTo(-36, -16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(48, -22);
+    ctx.lineTo(68, 22);
+    ctx.lineTo(10, 28);
+    ctx.lineTo(36, -16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (style === "open-blazer") {
+    // Tailored Open Blazer over a Soft Silk Blouse/Shell (No Stiff Tie/Collar)
+    drawShoulderBase(pal.main, pal.dark);
+
+    // Soft silk inner shell
+    ctx.fillStyle = pal.inner;
+    ctx.beginPath();
+    ctx.moveTo(-48, -12);
+    ctx.lineTo(-32, 195);
+    ctx.lineTo(32, 195);
+    ctx.lineTo(48, -12);
+    ctx.closePath();
+    ctx.fill();
+
+    drawNaturalNeckline(36, 46);
+
+    // Tailored blazer lapels
+    ctx.fillStyle = pal.dark;
+    ctx.strokeStyle = pal.light;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-58, -18);
+    ctx.lineTo(-82, 35);
+    ctx.lineTo(-30, 145);
+    ctx.lineTo(-42, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(58, -18);
+    ctx.lineTo(82, 35);
+    ctx.lineTo(30, 145);
+    ctx.lineTo(42, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (style === "classic-suit") {
+    // Classic Structured Business Suit & Crisp Shirt Collar
+    drawShoulderBase(pal.main, pal.dark);
+
+    // Crisp white dress shirt V
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(-50, -18);
+    ctx.lineTo(0, 125);
+    ctx.lineTo(50, -18);
+    ctx.closePath();
+    ctx.fill();
+
+    drawNaturalNeckline(22, 40);
+
+    // Shirt collar points
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-44, -20);
+    ctx.lineTo(-56, 18);
+    ctx.lineTo(-8, 22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(44, -20);
+    ctx.lineTo(56, 18);
+    ctx.lineTo(8, 22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Notched suit lapels
+    ctx.fillStyle = pal.dark;
+    ctx.strokeStyle = pal.light;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-56, -18);
+    ctx.lineTo(-88, 38);
+    ctx.lineTo(-2, 132);
+    ctx.lineTo(-46, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(56, -18);
+    ctx.lineTo(88, 38);
+    ctx.lineTo(2, 132);
+    ctx.lineTo(46, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (style === "scrubs") {
+    // Healthcare Clinical V-Neck Scrubs
+    drawShoulderBase(pal.main, pal.dark);
+    drawNaturalNeckline(56, 48);
+
+    // Mitered V-neck scrub collar band
+    ctx.fillStyle = pal.dark;
+    ctx.strokeStyle = pal.light;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-58, -18);
+    ctx.lineTo(0, 66);
+    ctx.lineTo(58, -18);
+    ctx.lineTo(44, -18);
+    ctx.lineTo(0, 48);
+    ctx.lineTo(-44, -18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Chest pocket seam on right side
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(58, 72, 62, 68);
+  } else if (style === "lab-coat") {
+    // White Clinical Coat over Colored Scrub/Blouse Under-Top
+    drawShoulderBase("#f8fafc", "#e2e8f0");
+
+    // Inner colored clinical top
+    ctx.fillStyle = pal.main;
+    ctx.beginPath();
+    ctx.moveTo(-48, -14);
+    ctx.lineTo(-28, 195);
+    ctx.lineTo(28, 195);
+    ctx.lineTo(48, -14);
+    ctx.closePath();
+    ctx.fill();
+
+    drawNaturalNeckline(38, 44);
+
+    // Crisp white clinical coat lapels
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(-56, -18);
+    ctx.lineTo(-86, 42);
+    ctx.lineTo(-26, 175);
+    ctx.lineTo(-42, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(56, -18);
+    ctx.lineTo(86, 42);
+    ctx.lineTo(26, 175);
+    ctx.lineTo(42, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // Optional Finishing Touches (Necklace, Silk Scarf, Stethoscope, or Tie)
+  if (acc === "pendant") {
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(-36, -6);
+    ctx.quadraticCurveTo(0, 32, 36, -6);
+    ctx.stroke();
+    ctx.fillStyle = "#fef3c7";
+    ctx.beginPath();
+    ctx.arc(0, 18, 5.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else if (acc === "scarf") {
+    ctx.fillStyle = pal.light;
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-46, -8);
+    ctx.quadraticCurveTo(0, 26, 46, -8);
+    ctx.quadraticCurveTo(28, 42, -18, 22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (acc === "stethoscope") {
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 7;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-64, -14);
+    ctx.bezierCurveTo(-82, 35, -72, 95, -58, 138);
+    ctx.moveTo(64, -14);
+    ctx.bezierCurveTo(84, 35, 76, 85, 68, 120);
+    ctx.stroke();
+    // Stethoscope diaphragm
+    ctx.fillStyle = "#94a3b8";
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(68, 126, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else if (acc === "tie") {
+    ctx.fillStyle = pal.main === "#1e3a5f" ? "#991b1b" : "#1e3a5f";
+    ctx.beginPath();
+    ctx.moveTo(-12, 18);
+    ctx.lineTo(12, 18);
+    ctx.lineTo(8, 34);
+    ctx.lineTo(16, 112);
+    ctx.lineTo(0, 130);
+    ctx.lineTo(-16, 112);
+    ctx.lineTo(-8, 34);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
 
 function initSelfieSegmenterIfAvailable() {
   if (hsStudioState.segmenter || typeof window.SelfieSegmentation === "undefined") {
@@ -1269,6 +1669,9 @@ function renderHeadshotStudioCanvas(forExport = false) {
 
     ctx.drawImage(personLayer, 0, 0);
   }
+
+  // 2.5 Render Chosen Professional Attire / Wardrobe Overlay (if selected)
+  drawStudioAttireOverlay(ctx, size);
 
   // 3. Subtle Studio Rim Vignette
   const vig = ctx.createRadialGradient(size * 0.5, size * 0.45, size * 0.34, size * 0.5, size * 0.5, size * 0.54);
@@ -3999,7 +4402,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   });
 
-  // Framing & Lighting Sliders
+  // Inclusive Professional Attire / Wardrobe Selector
+  document.querySelectorAll("#hsAttireGrid .hs-attire-btn").forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll("#hsAttireGrid .hs-attire-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const chosenAttire = btn.dataset.attire;
+      hsStudioState.attire = chosenAttire;
+
+      // Smart default color & accessory suggestions based on attire choice
+      const colorSel = document.getElementById("hsAttireColorSelect");
+      const accSel = document.getElementById("hsAttireAccessorySelect");
+      if (chosenAttire === "scrubs") {
+        hsStudioState.attireColor = "teal";
+        if (colorSel) colorSel.value = "teal";
+      } else if (chosenAttire === "blouse" || chosenAttire === "cardigan") {
+        hsStudioState.attireColor = "ivory";
+        if (colorSel) colorSel.value = "ivory";
+      } else if (chosenAttire === "dress") {
+        hsStudioState.attireColor = "burgundy";
+        if (colorSel) colorSel.value = "burgundy";
+      } else if (chosenAttire === "button-shirt") {
+        hsStudioState.attireColor = "sky";
+        if (colorSel) colorSel.value = "sky";
+      } else if (chosenAttire === "open-blazer" || chosenAttire === "classic-suit") {
+        hsStudioState.attireColor = "navy";
+        if (colorSel) colorSel.value = "navy";
+      }
+      if (accSel && chosenAttire !== "scrubs" && chosenAttire !== "lab-coat" && hsStudioState.attireAccessory === "stethoscope") {
+        hsStudioState.attireAccessory = "none";
+        accSel.value = "none";
+      }
+
+      const customPanel = document.getElementById("hsAttireCustomPanel");
+      if (customPanel) {
+        customPanel.classList.toggle("hidden", chosenAttire === "keep-original");
+      }
+      renderHeadshotStudioCanvas(false);
+    };
+  });
+
+  const hsAttireColorSel = document.getElementById("hsAttireColorSelect");
+  if (hsAttireColorSel) {
+    hsAttireColorSel.onchange = () => {
+      hsStudioState.attireColor = hsAttireColorSel.value;
+      renderHeadshotStudioCanvas(false);
+    };
+  }
+
+  const hsAttireAccSel = document.getElementById("hsAttireAccessorySelect");
+  if (hsAttireAccSel) {
+    hsAttireAccSel.onchange = () => {
+      hsStudioState.attireAccessory = hsAttireAccSel.value;
+      renderHeadshotStudioCanvas(false);
+    };
+  }
+
+  // Framing, Attire Fit & Lighting Sliders
   const bindStudioSlider = (id, stateKey, labelId, suffix = "") => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -4014,6 +4473,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   };
 
+  bindStudioSlider("hsAttireYSlider", "attireOffsetY", "hsAttireYVal", "");
+  bindStudioSlider("hsAttireScaleSlider", "attireScale", "hsAttireScaleVal", "%");
   bindStudioSlider("hsZoomSlider", "zoom", "hsZoomVal", "%");
   bindStudioSlider("hsTiltSlider", "tilt", "hsTiltVal", "°");
   bindStudioSlider("hsPanXSlider", "panX", "hsPanXVal", "");
@@ -4021,6 +4482,87 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindStudioSlider("hsBrightSlider", "brightness", "hsBrightVal", "%");
   bindStudioSlider("hsContrastSlider", "contrast", "hsContrastVal", "%");
   bindStudioSlider("hsWarmthSlider", "warmth", "hsWarmthVal", "");
+
+  // Optional Gemini AI Identity-Preserving Attire Tailor
+  const hsGeminiBtn = document.getElementById("hsGeminiAiBlendBtn");
+  if (hsGeminiBtn) {
+    hsGeminiBtn.onclick = async () => {
+      if (!hsStudioState.sourceImage) {
+        alert("Please upload a photo or snap a camera picture in Step 1 first.");
+        return;
+      }
+      let apiKey = localStorage.getItem("optitrajectory_gemini_key") || "";
+      if (!apiKey) {
+        apiKey = prompt(
+          "Optional AI Studio Tailor: Enter your Google Gemini API Key to blend the chosen attire using Gemini Image Generation (while keeping your instant built-in studio attire active at all times):"
+        );
+        if (!apiKey) return;
+        localStorage.setItem("optitrajectory_gemini_key", apiKey.trim());
+      }
+      const attireLabels = {
+        blouse: "a tailored silk professional blouse (no suit jacket)",
+        dress: "an executive professional wrap/sheath dress",
+        cardigan: "a soft knit cardigan worn over a professional top",
+        "button-shirt": "a crisp collared button-down dress shirt (no tie)",
+        "open-blazer": "a modern open blazer worn over a soft blouse/top",
+        "classic-suit": "a tailored business suit jacket and collared shirt",
+        scrubs: "clinical V-neck healthcare scrubs",
+        "lab-coat": "a crisp white clinical physician/medical coat over a professional top"
+      };
+      const desc = attireLabels[hsStudioState.attire] || "professional attire";
+      const origText = hsGeminiBtn.textContent;
+      hsGeminiBtn.textContent = "⏳ Tailoring Attire (Preserving 100% Real Face)...";
+      hsGeminiBtn.disabled = true;
+      try {
+        // Export current framed source without guide
+        const tempCan = document.createElement("canvas");
+        tempCan.width = 520;
+        tempCan.height = 520;
+        const tCtx = tempCan.getContext("2d");
+        drawTransformedSourceImage(tCtx, hsStudioState.sourceImage, 520, "none");
+        const b64 = tempCan.toDataURL("image/jpeg", 0.9).split(",")[1];
+
+        const resp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${encodeURIComponent(apiKey.trim())}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    {
+                      text: `Edit only the clothing below the neck in this portrait so the person is wearing ${desc} in ${hsStudioState.attireColor} color. CRITICAL RULE: Keep 100% of the person's real face, facial structure, eyes, glasses, skin tone, hair, age, and expression completely identical and unaltered.`
+                    },
+                    { inlineData: { mimeType: "image/jpeg", data: b64 } }
+                  ]
+                }
+              ],
+              generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+            })
+          }
+        );
+        const data = await resp.json();
+        const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
+        const imgPart = parts.find((p) => p.inlineData && p.inlineData.data);
+        if (imgPart) {
+          hsStudioState.attire = "keep-original";
+          hsStudioState.zoom = 100;
+          hsStudioState.panX = 0;
+          hsStudioState.panY = 0;
+          hsStudioState.tilt = 0;
+          loadDataUrlIntoHeadshotStudio(`data:${imgPart.inlineData.mimeType || "image/png"};base64,${imgPart.inlineData.data}`);
+        } else {
+          alert("Gemini API did not return an edited image—our built-in Studio Wardrobe overlay remains active.");
+        }
+      } catch (err) {
+        alert("Could not reach Gemini API—our built-in Studio Wardrobe overlay remains active.");
+      } finally {
+        hsGeminiBtn.textContent = origText;
+        hsGeminiBtn.disabled = false;
+      }
+    };
+  }
 
   const hsRingSel = document.getElementById("hsRingSelect");
   if (hsRingSel) {
