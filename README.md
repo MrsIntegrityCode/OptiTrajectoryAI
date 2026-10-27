@@ -1,6 +1,6 @@
-# OptiTrajectoryAI (CareerOS)
+# OptiTrajectoryAI — Optimize Your Career Trajectory
 
-An all-in-one career trajectory, resume optimization, visual candidate infographic, and real-time job matching web application with multi-user accounts and opt-in public portfolio sharing.
+**OptiTrajectoryAI** consolidates everything you need to optimize your career trajectory into a single platform: defining your career goals & 3-horizon trajectory, evaluating & rewriting your resume, generating a 1-page visual candidate infographic, and matching/applying to real jobs.
 
 ## ✨ Core Modules
 

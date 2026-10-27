@@ -1,5 +1,5 @@
 /**
- * CareerOS — Unified Application State & Engine
+ * OptiTrajectoryAI — Optimize Your Career Trajectory
  * Connects Career Compass -> Resume Studio -> Candidate Infographic -> Live Job Discovery & Analyzer -> Application CRM
  */
 
@@ -1557,7 +1557,7 @@ async function checkPublicProfileRoute() {
           <p style="color:#94a3b8; font-size:0.92rem; margin-bottom:20px;">
             ${escapeHtml(data.error || "This candidate has not enabled public-facing visibility for their profile.")}
           </p>
-          <a href="/" class="btn btn-primary">Go to CareerOS Login →</a>
+          <a href="/" class="btn btn-primary">Go to OptiTrajectoryAI Login →</a>
         </div>
       `;
       return true;
@@ -1748,7 +1748,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `careeros-${(state.name || "profile").toLowerCase().replace(/\s+/g, "-")}.json`;
+    a.download = `optitrajectoryai-${(state.name || "profile").toLowerCase().replace(/\s+/g, "-")}.json`;
     a.click();
   };
 

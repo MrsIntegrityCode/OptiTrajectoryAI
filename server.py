@@ -74,7 +74,7 @@ def fetch_remotive_jobs(query="", category=""):
     url = "https://remotive.com/api/remote-jobs?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(
         url,
-        headers={"User-Agent": "CareerOS/1.0 (https://localhost)"}
+        headers={"User-Agent": "OptiTrajectoryAI/1.0 (https://localhost)"}
     )
     with urllib.request.urlopen(req, timeout=8) as resp:
         data = json.loads(resp.read().decode("utf-8"))
@@ -488,10 +488,10 @@ class CareerOSHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     init_db()
-    print(f"🚀 CareerOS (with Auth & Privacy Controls) running at http://localhost:{PORT}")
+    print(f"🚀 OptiTrajectoryAI (Optimize Your Career Trajectory) running at http://localhost:{PORT}")
     server = HTTPServer(("127.0.0.1", PORT), CareerOSHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nShutting down CareerOS server.")
+        print("\nShutting down OptiTrajectoryAI server.")
         server.server_close()
